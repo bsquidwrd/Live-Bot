@@ -39,7 +39,7 @@ handler = logging.FileHandler(filename=log_filename, encoding='utf-8', mode='w')
 log.addHandler(handler)
 help_attrs = dict(hidden=True)
 prefix = ['!livebot ']
-bot = commands.Bot(command_prefix=prefix, description=description, pm_help=None, help_attrs=help_attrs)
+bot = commands.Bot(command_prefix=prefix, description=description, pm_help=None, help_attrs=help_attrs, log=log)
 
 @bot.event
 async def on_command_error(error, ctx):
