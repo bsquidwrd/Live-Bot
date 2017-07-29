@@ -1,5 +1,5 @@
 ## Live Bot
-[![Documentation Status](https://readthedocs.org/projects/live-bot/badge/?version=latest)](http://live-bot.readthedocs.io/en/latest/?badge=latest) [![Coverage Status](https://coveralls.io/repos/github/bsquidwrd/Live-Bot/badge.svg?branch=master)](https://coveralls.io/github/bsquidwrd/Live-Bot?branch=master) [![Requirements Status](https://requires.io/github/bsquidwrd/Live-Bot/requirements.svg?branch=master)](https://requires.io/github/bsquidwrd/Live-Bot/requirements/?branch=master)
+[![Build Status](https://travis-ci.org/bsquidwrd/Live-Bot.svg?branch=master)](https://travis-ci.org/bsquidwrd/Live-Bot) [![Documentation Status](https://readthedocs.org/projects/live-bot/badge/?version=latest)](http://live-bot.readthedocs.io/en/latest/?badge=latest) [![Coverage Status](https://coveralls.io/repos/github/bsquidwrd/Live-Bot/badge.svg?branch=master)](https://coveralls.io/github/bsquidwrd/Live-Bot?branch=master) [![Requirements Status](https://requires.io/github/bsquidwrd/Live-Bot/requirements.svg?branch=master)](https://requires.io/github/bsquidwrd/Live-Bot/requirements/?branch=master)
 
 
 ## Running
