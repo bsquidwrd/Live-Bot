@@ -1,5 +1,5 @@
 language: python
-
+dist: trusty
 python:
   - 3.6.1
 
@@ -28,5 +28,3 @@ notifications:
 
 after_success:
     - coveralls
-
-dist: trusty
