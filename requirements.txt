@@ -3,5 +3,5 @@ coveralls==1.1
 coverage==4.4.1
 Django==1.11.3
 django-allauth==0.32.0
-requests==2.18.1
+requests==2.18.2
 requests-oauthlib==0.8.0
