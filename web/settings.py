@@ -95,7 +95,6 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.twitch',
     'allauth.socialaccount.providers.discord',
@@ -184,15 +183,20 @@ STATIC_URL = '/static/'
 ############################
 
 LOGIN_REDIRECT_URL = '/'
+
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_USERNAME_BLACKLIST = ['bsquidwrd', 'livebot', 'live-bot']
+ACCOUNT_USERNAME_MIN_LENGTH = 5
+SOCIALACCOUNT_EMAIL_VERIFICATION = False
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {
-            'access_type': 'offline'
-        }
+    'twitch': {
+        'SCOPE': ['user_read']
     },
-    "twitch": {
-        "SCOPE": ["user_read"]
+    'discord': {
+        'SCOPE': ['email', 'identify']
     },
 }
 
