@@ -11,8 +11,7 @@ import os
 from collections import Counter
 
 import web.wsgi
-from gaming.models import Log, Channel, Server, DiscordUser, ServerUser
-from gaming.utils import logify_exception_info, logify_dict
+from cogs.utils.utils import logify_exception_info, logify_dict
 
 debug_mode = os.getenv('LIVE_BOT_DEBUG_MODE', 'true')
 if not isinstance(debug_mode, bool):

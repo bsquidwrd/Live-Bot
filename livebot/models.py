@@ -32,14 +32,15 @@ class TwitchNotification(models.Model):
         - TwitchNotification.objects.get(twitch=TwitchChannel, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
 
     This is meant to be used to store related information sent for
-    Twitter, Discord or anything added in the future
+    Twitter, Discord or anything added in the future.
+
+    This is where users will store what DiscordChannel or Twitter or
+    anything else they want notified when they go live
     """
     twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    timestamp = models.DateTimeField(default=timezone.now, verbose_name='Timestamp')
-    success = models.BooleanField(default=False, verbose_name='Success')
 
     def __str__(self):
         return '{}'.format(self.twitch)

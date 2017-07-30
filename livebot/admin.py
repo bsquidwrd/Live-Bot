@@ -1,7 +1,22 @@
 from django.contrib import admin
 from django.apps import apps
+from .models import *
+
+
+@admin.register(TwitchNotification)
+class TwitchNotificationAdmin(admin.ModelAdmin):
+    def get_display_name(self, obj):
+        return str(obj)
+
+    get_display_name.short_description = 'Display Name'
+
+    list_display = ('get_display_name', 'content_type', 'content_object')
+    list_filter = ('content_type',)
+    search_fields = ['twitch__id', 'twitch__name', 'object_id']
+
 
 app = apps.get_app_config('livebot')
-
 for model_name, model in app.models.items():
+    if model_name in ['twitchnotification']:
+        continue
     admin.site.register(model)
