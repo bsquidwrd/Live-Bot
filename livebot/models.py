@@ -1,7 +1,7 @@
 import random
 import string
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from cogs.utils.utils import logify_exception_info
@@ -28,14 +28,18 @@ class TwitchNotification(models.Model):
     Examples:
         - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=DiscordMessage)
         - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=Tweet)
+        - TwitchNotification.objects.filter(twitch=TwitchChannel, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
+        - TwitchNotification.objects.get(twitch=TwitchChannel, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
 
-    This is meant to be used to store tweets and discord messages sent for
+    This is meant to be used to store related information sent for
     Twitter, Discord or anything added in the future
     """
     twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+    timestamp = models.DateTimeField(default=timezone.now, verbose_name='Timestamp')
+    success = models.BooleanField(default=False, verbose_name='Success')
 
     def __str__(self):
         return '{}'.format(self.twitch)
@@ -75,6 +79,7 @@ class DiscordMessage(models.Model):
     channel = models.ForeignKey(DiscordChannel)
     timestamp = models.DateTimeField(default=timezone.now)
     message = models.TextField()
+    twitch_notification = GenericRelation(TwitchNotification)
 
     def __str__(self):
         return '[{}] - {}'.format(self.timestamp, self.id)
@@ -101,6 +106,7 @@ class Tweet(models.Model):
     twitter = models.ForeignKey(Twitter, verbose_name='Twitter Account')
     message = models.CharField(max_length=140, verbose_name='Tweet Message')
     timestamp = models.DateTimeField(default=timezone.now)
+    twitch_notification = GenericRelation(TwitchNotification)
 
     def __str__(self):
         return '[{}] - {}'.format(self.timestamp, self.message)
