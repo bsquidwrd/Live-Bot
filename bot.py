@@ -9,8 +9,15 @@ import traceback
 import sys
 import os
 from collections import Counter
-import environment
 
+import web.wsgi
+from gaming.models import Log, Channel, Server, DiscordUser, ServerUser
+from gaming.utils import logify_exception_info, logify_dict
+
+debug_mode = os.getenv('LIVE_BOT_DEBUG_MODE', 'true')
+if not isinstance(debug_mode, bool):
+    # LIVE_BOT_DEBUG_MODE can be set to either 'false' or 'no'. Case insensitive
+    debug_mode = not (debug_mode.lower() in ['false', 'no'])
 
 github_url = 'https://github.com/bsquidwrd/Live-Bot'
 
@@ -22,7 +29,6 @@ For the nitty gritty, checkout my GitHub: {0}
 initial_extensions = [
     'cogs.admin',
     'cogs.tasks',
-    # 'cogs.live_bot',
 ]
 
 discord_logger = logging.getLogger('discord')

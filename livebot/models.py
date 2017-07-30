@@ -1,21 +1,48 @@
 import random
 import string
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from cogs.utils.utils import logify_exception_info
 
 
-class DiscordUser(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='User ID')
-    name = models.CharField(max_length=255, verbose_name='Username')
-    discrimiator = models.CharField(max_length=255, verbose_name='Discrimiator')
-    bot = models.BooleanField(default=False, verbose_name='Bot')
+class TwitchChannel(models.Model):
+    id = models.IntegerField(primary_key=True, verbose_name='Channel ID')
+    name = models.CharField(max_length=255, verbose_name='Channel Name')
 
     def __str__(self):
-        return '{}#{}{}'.format(self.name, self.discrimiator, ' (Bot)' if self.bot else '')
+        return '{}'.format(self.name)
 
     class Meta:
-        verbose_name = 'Discord User'
-        verbose_name_plural = 'Discord Users'
+        verbose_name = 'Twitch Channel'
+        verbose_name_plural = 'Twitch Channels'
+
+
+class TwitchNotification(models.Model):
+    """
+    content_type = Model Type
+    object_id = PK for content_type
+    content_object = Reference to actual model with content
+
+    Examples:
+        - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=DiscordMessage)
+        - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=Tweet)
+
+    This is meant to be used to store tweets and discord messages sent for
+    Twitter, Discord or anything added in the future
+    """
+    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    def __str__(self):
+        return '{}'.format(self.twitch)
+
+    class Meta:
+        verbose_name = 'Twitch Noticication'
+        verbose_name_plural = 'Twitch Noticications'
 
 
 class DiscordServer(models.Model):
@@ -36,38 +63,61 @@ class DiscordChannel(models.Model):
     server = models.ForeignKey(DiscordServer, verbose_name='Channel Server')
 
     def __str__(self):
-        return '{}'.format(self.name)
+        return '{} - {}'.format(self.server, self.name)
 
     class Meta:
         verbose_name = 'Discord Channel'
         verbose_name_plural = 'Discord Channels'
 
 
-class TwitchChannel(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='Channel ID')
-    name = models.CharField(max_length=255, verbose_name='Channel Name')
+class DiscordMessage(models.Model):
+    id = models.IntegerField(primary_key=True, verbose_name='Message ID')
+    channel = models.ForeignKey(DiscordChannel)
+    timestamp = models.DateTimeField(default=timezone.now)
+    message = models.TextField()
+
+    def __str__(self):
+        return '[{}] - {}'.format(self.timestamp, self.id)
+
+    class Meta:
+        verbose_name = 'Discord Message'
+        verbose_name_plural = 'Discord Messages'
+
+
+class Twitter(models.Model):
+    id = models.IntegerField(primary_key=True, verbose_name='Twitter ID')
+    name = models.CharField(max_length=255, verbose_name='Username')
 
     def __str__(self):
         return '{}'.format(self.name)
 
     class Meta:
-        verbose_name = 'Twitch Channel'
-        verbose_name_plural = 'Twitch Channels'
+        verbose_name = 'Twitter Account'
+        verbose_name_plural = 'Twitter Accounts'
+
+
+class Tweet(models.Model):
+    id = models.IntegerField(primary_key=True, verbose_name='Tweet ID')
+    twitter = models.ForeignKey(Twitter, verbose_name='Twitter Account')
+    message = models.CharField(max_length=140, verbose_name='Tweet Message')
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return '[{}] - {}'.format(self.timestamp, self.message)
+
+    class Meta:
+        verbose_name = 'Tweet'
+        verbose_name_plural = 'Tweets'
 
 
 class Notification(models.Model):
-    DISCORD = 'discord'
-    TWITTER = 'twitter'
-    NOTIFICATION_TYPES = (
-        (DISCORD, DISCORD),
-        (TWITTER, TWITTER),
-    )
     log = models.ForeignKey('Log', verbose_name='Log Item')
-    type = models.CharField(choices=NOTIFICATION_TYPES, verbose_name='Notification Type')
-    success = models.BooleanField(default=False, verbose_name='Success')
+    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
+    discord_message = models.ForeignKey(DiscordChannel, verbose_name='Discord Message', blank=True, null=True)
+    tweet = models.ForeignKey(Tweet, verbose_name='Twitter Message', blank=True, null=True)
 
     def __str__(self):
-        return '{} {}'.format(self.type, self.log)
+        return '{}'.format(self.twitch)
 
     class Meta:
         verbose_name = 'Notification'
@@ -83,7 +133,7 @@ class Log(models.Model):
     body = models.CharField(max_length=4000, blank=True, null=True, default=None)
 
     def __str__(self):
-        return "[%s] - %s" % (self.timestamp, self.message_token)
+        return "[{}] - {}".format(self.timestamp, self.message_token)
 
     def generate_log_token(self, save=True):
         try:

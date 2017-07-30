@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.twitch',
     'allauth.socialaccount.providers.discord',
+    'livebot',
 ]
 
 MIDDLEWARE = [
