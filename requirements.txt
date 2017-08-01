@@ -5,3 +5,4 @@ Django==1.11.3
 django-allauth==0.32.0
 requests==2.18.2
 requests-oauthlib==0.8.0
+python-dateutil==2.6.1

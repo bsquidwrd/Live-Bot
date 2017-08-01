@@ -14,40 +14,13 @@ class TwitchChannel(models.Model):
     def __str__(self):
         return '{}'.format(self.name)
 
+    @property
+    def url(self):
+        return 'https://twitch.tv/{}'.format(self.name)
+
     class Meta:
         verbose_name = 'Twitch Channel'
         verbose_name_plural = 'Twitch Channels'
-
-
-class TwitchNotification(models.Model):
-    """
-    content_type = Model Type
-    object_id = PK for content_type
-    content_object = Reference to actual model with content
-
-    Examples:
-        - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=DiscordMessage)
-        - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=Tweet)
-        - TwitchNotification.objects.filter(twitch=TwitchChannel, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
-        - TwitchNotification.objects.get(twitch=TwitchChannel, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
-
-    This is meant to be used to store related information sent for
-    Twitter, Discord or anything added in the future.
-
-    This is where users will store what DiscordChannel or Twitter or
-    anything else they want notified when they go live
-    """
-    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    def __str__(self):
-        return '{}'.format(self.twitch)
-
-    class Meta:
-        verbose_name = 'Twitch Noticication'
-        verbose_name_plural = 'Twitch Noticications'
 
 
 class DiscordServer(models.Model):
@@ -75,21 +48,6 @@ class DiscordChannel(models.Model):
         verbose_name_plural = 'Discord Channels'
 
 
-class DiscordMessage(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='Message ID')
-    channel = models.ForeignKey(DiscordChannel)
-    timestamp = models.DateTimeField(default=timezone.now)
-    message = models.TextField()
-    twitch_notification = GenericRelation(TwitchNotification)
-
-    def __str__(self):
-        return '[{}] - {}'.format(self.timestamp, self.id)
-
-    class Meta:
-        verbose_name = 'Discord Message'
-        verbose_name_plural = 'Discord Messages'
-
-
 class Twitter(models.Model):
     id = models.IntegerField(primary_key=True, verbose_name='Twitter ID')
     name = models.CharField(max_length=255, verbose_name='Username')
@@ -102,29 +60,81 @@ class Twitter(models.Model):
         verbose_name_plural = 'Twitter Accounts'
 
 
-class Tweet(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='Tweet ID')
-    twitter = models.ForeignKey(Twitter, verbose_name='Twitter Account')
-    message = models.CharField(max_length=140, verbose_name='Tweet Message')
-    timestamp = models.DateTimeField(default=timezone.now)
-    twitch_notification = GenericRelation(TwitchNotification)
+class TwitchNotification(models.Model):
+    """
+    content_type = Model Type
+    object_id = PK for content_type
+    content_object = Reference to actual model with content
 
-    def __str__(self):
-        return '[{}] - {}'.format(self.timestamp, self.message)
+    Examples:
+        - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=DiscordMessage)
+        - TwitchNotification.objects.create(twitch=TwitchChannel, content_object=Tweet)
+        - TwitchNotification.objects.filter(twitch=TwitchChannel, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
+        - TwitchNotification.objects.get(twitch=TwitchChannel, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
 
-    class Meta:
-        verbose_name = 'Tweet'
-        verbose_name_plural = 'Tweets'
+    This is meant to be used to store related information sent for
+    Twitter, Discord or anything added in the future.
 
-
-class Notification(models.Model):
-    log = models.ForeignKey('Log', verbose_name='Log Item')
+    This is where users will store what DiscordChannel or Twitter or
+    anything else they want notified when they go live
+    """
     twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
-    discord_message = models.ForeignKey(DiscordChannel, verbose_name='Discord Message', blank=True, null=True)
-    tweet = models.ForeignKey(Tweet, verbose_name='Twitter Message', blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    message = models.CharField(max_length=255, default='{name} is Live!', verbose_name='Notification Message')
 
     def __str__(self):
         return '{}'.format(self.twitch)
+
+    def get_message(self, *args, **kwargs):
+        # Used to determine type of post to be made and to post about it
+        message_dict = {
+            'url': self.twitch.url,
+        }
+        message = self.message.format(**message_dict, **kwargs)
+        return message
+
+    class Meta:
+        verbose_name = 'Twitch Notification'
+        verbose_name_plural = 'Twitch Notifications'
+
+
+class TwitchLive(models.Model):
+    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
+    timestamp = models.DateTimeField()
+
+    def __str__(self):
+        return '{}'.format(self.twitch)
+
+    class Meta:
+        verbose_name = 'Twitch Live'
+        verbose_name_plural = 'Twitch Live Instances'
+
+
+class Notification(models.Model):
+    """
+    content_type = Model Type
+    object_id = PK for content_type
+    content_object = Reference to actual model with content
+
+    Examples:
+        - Notification.objects.create(live=TwitchLive, content_object=DiscordMessage)
+        - Notification.objects.create(live=TwitchLive, content_object=Tweet)
+        - Notification.objects.filter(live=TwitchLive, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
+        - Notification.objects.get(live=TwitchLive, content_type=ContentType.objects.get_for_model(DiscordMessage), object_id=DiscordMessage.pk)
+
+    This is meant to be the area to store notification results (whether success or not) when they go live
+    """
+    log = models.ForeignKey('Log', verbose_name='Log Item')
+    live = models.ForeignKey(TwitchLive, verbose_name='Twitch Live')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    success = models.BooleanField(default=False, verbose_name='Success')
+
+    def __str__(self):
+        return '{}'.format(self.live)
 
     class Meta:
         verbose_name = 'Notification'
@@ -141,6 +151,10 @@ class Log(models.Model):
 
     def __str__(self):
         return "[{}] - {}".format(self.timestamp, self.message_token)
+
+    def save(self, *args, **kwargs):
+        self.generate_log_token(save=False)
+        super().save(*args, **kwargs)
 
     def generate_log_token(self, save=True):
         try:
