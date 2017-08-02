@@ -8,7 +8,7 @@ from cogs.utils.utils import logify_exception_info
 
 
 class TwitchChannel(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='Channel ID')
+    id = models.BigIntegerField(primary_key=True, verbose_name='Channel ID')
     name = models.CharField(max_length=255, verbose_name='Channel Name')
 
     def __str__(self):
@@ -24,7 +24,7 @@ class TwitchChannel(models.Model):
 
 
 class DiscordServer(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='Server ID')
+    id = models.BigIntegerField(primary_key=True, verbose_name='Server ID')
     name = models.CharField(max_length=255, verbose_name='Server Name')
 
     def __str__(self):
@@ -36,7 +36,7 @@ class DiscordServer(models.Model):
 
 
 class DiscordChannel(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='Channel ID')
+    id = models.BigIntegerField(primary_key=True, verbose_name='Channel ID')
     name = models.CharField(max_length=255, verbose_name='Channel Name')
     server = models.ForeignKey(DiscordServer, verbose_name='Channel Server')
 
@@ -49,7 +49,7 @@ class DiscordChannel(models.Model):
 
 
 class Twitter(models.Model):
-    id = models.IntegerField(primary_key=True, verbose_name='Twitter ID')
+    id = models.BigIntegerField(primary_key=True, verbose_name='Twitter ID')
     name = models.CharField(max_length=255, verbose_name='Username')
 
     def __str__(self):
