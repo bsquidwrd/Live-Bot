@@ -7,7 +7,7 @@ _NOTE: If you want to run this yourself, make sure the bot is a "Bot User"_
 
 I'd prefer if only my instance was running so the bot and users don't get confused. You should only need one main configuration file while the rest will be created automatically. In the `web` directory, rename [environment_example.py](environment_example.py) to `environment.py`
 
-[Click here to have the bot added to your server]()
+[Click here to have the bot added to your server](https://discordapp.com/oauth2/authorize?client_id=334870738257444865&scope=bot&permissions=519248)
 
 
 ## Requirements
