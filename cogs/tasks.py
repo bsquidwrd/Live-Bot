@@ -87,8 +87,9 @@ class Tasks:
                                         embed.add_field(name="Stream", value=twitch.url, inline=True)
                                         await self.bot.send_message(channel, message, embed=embed)
                                 elif notification.content_type == twitter_content_type:
-                                    twitter = communicate.Twitter(log=log, uid=notification.object_id)
-                                    twitter.tweet('{} {}'.format(message[:115], twitch.url))
+                                    # twitter = communicate.Twitter(log=log, uid=notification.object_id)
+                                    # twitter.tweet('{} {}'.format(message[:115], twitch.url))
+                                    pass
                                 log.message += "Notification success"
                                 live_notification.success = True
                                 live_notification.save()
