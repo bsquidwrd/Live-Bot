@@ -79,7 +79,7 @@ class Tasks:
                                             'title': result['stream']['channel']['display_name'],
                                             'description': result['stream']['channel']['status'],
                                             'url': twitch.url,
-                                            'colour': discord.Colour.green(),
+                                            'colour': discord.Colour.dark_purple(),
                                         }
                                         embed = discord.Embed(**embed_args)
                                         embed.set_thumbnail(url=result['stream']['channel']['logo'])
