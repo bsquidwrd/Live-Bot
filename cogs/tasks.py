@@ -44,6 +44,7 @@ class Tasks:
 
     async def run_scheduled_tasks(self):
         try:
+            result = None
             discord_content_type = ContentType.objects.get_for_model(DiscordChannel)
             twitter_content_type = ContentType.objects.get_for_model(Twitter)
 
@@ -53,7 +54,10 @@ class Tasks:
             }
             twitch_channels = TwitchChannel.objects.annotate(Count('twitchnotification')).filter(twitchnotification__count__gte=1)
             for twitch in twitch_channels:
-                result = requests.get("https://api.twitch.tv/kraken/streams/{0}".format(twitch.name), headers=headers).json()
+                result = requests.get("https://api.twitch.tv/kraken/streams/{0}".format(twitch.name), headers=headers)
+                if not result.ok:
+                    continue
+                result = result.json()
                 if result['stream'] is not None:
                     if result['stream']['stream_type'] == 'live':
                         timestamp = parse(result['stream']['created_at'])
@@ -77,15 +81,16 @@ class Tasks:
                                     else:
                                         embed_args = {
                                             'title': result['stream']['channel']['display_name'],
-                                            'description': result['stream']['channel']['status'],
+                                            # 'description': result['stream']['channel']['status'],
                                             'url': twitch.url,
                                             'colour': discord.Colour.dark_purple(),
                                         }
                                         embed = discord.Embed(**embed_args)
                                         embed.set_thumbnail(url=result['stream']['channel']['logo'])
-                                        embed.add_field(name="Game", value=result['stream']['game'], inline=True)
+                                        embed.add_field(name="Title", value=result['stream']['channel']['status'], inline=True)
+                                        # embed.add_field(name="Game", value=result['stream']['game'], inline=True)
                                         embed.add_field(name="Stream", value=twitch.url, inline=True)
-                                        await self.bot.send_message(channel, message, embed=embed)
+                                        await self.bot.send_message(channel, "{}".format(message), embed=embed)
                                 elif notification.content_type == twitter_content_type:
                                     twitter = communicate.Twitter(log=log, uid=notification.object_id)
                                     twitter.tweet('{} {}'.format(message[:115], twitch.url))
@@ -99,7 +104,7 @@ class Tasks:
                                 log.save()
 
         except Exception as e:
-            print("{}\n{}".format(logify_exception_info(), e))
+            print("{}\n{}\n{}".format(logify_exception_info(), e, result))
             pass
 
 

@@ -43,6 +43,10 @@ class DiscordChannel(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.server, self.name)
 
+    @classmethod
+    def get_content_type(cls):
+        return ContentType.objects.get_for_model(cls)
+
     class Meta:
         verbose_name = 'Discord Channel'
         verbose_name_plural = 'Discord Channels'
@@ -54,6 +58,10 @@ class Twitter(models.Model):
 
     def __str__(self):
         return '{}'.format(self.name)
+
+    @classmethod
+    def get_content_type(cls):
+        return ContentType.objects.get_for_model(cls)
 
     class Meta:
         verbose_name = 'Twitter Account'
@@ -82,10 +90,20 @@ class TwitchNotification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.BigIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    message = models.CharField(max_length=255, default='{name} is Live!', verbose_name='Notification Message')
+    message = models.CharField(max_length=255, blank=True, null=True, verbose_name='Notification Message')
 
     def __str__(self):
         return '{}'.format(self.twitch)
+
+    def save(self, *args, **kwargs):
+        if self.message == "" or self.message is None:
+            if self.content_type == DiscordChannel.get_content_type():
+                self.message = "@everyone {name} is live and is playing {game}! {url}"
+            elif self.content_type == Twitter.get_content_type():
+                self.message = "I'm live and playing {game}! {url}"
+            else:
+                self.message = "{name} is live! {url}"
+        super().save(*args, **kwargs)
 
     def get_message(self, *args, **kwargs):
         # Used to determine type of post to be made and to post about it
