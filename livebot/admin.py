@@ -1,6 +1,45 @@
 from django.contrib import admin
-from django.apps import apps
 from .models import *
+
+
+@admin.register(TwitchChannel)
+class TwitchChannelAdmin(admin.ModelAdmin):
+    def get_display_name(self, obj):
+        return str(obj)
+
+    get_display_name.short_description = 'Display Name'
+    list_display = ('get_display_name', 'name', 'id')
+    search_fields = ['name', 'id']
+
+
+@admin.register(DiscordServer)
+class DiscordServerAdmin(admin.ModelAdmin):
+    def get_display_name(self, obj):
+        return str(obj)
+
+    get_display_name.short_description = 'Display Name'
+    list_display = ('get_display_name', 'name', 'id')
+    search_fields = ['name', 'id']
+
+
+@admin.register(DiscordChannel)
+class DiscordChannelAdmin(admin.ModelAdmin):
+    def get_display_name(self, obj):
+        return str(obj)
+
+    get_display_name.short_description = 'Display Name'
+    list_display = ('get_display_name', 'name', 'id', 'server')
+    search_fields = ['name', 'id', 'server__id']
+
+
+@admin.register(Twitter)
+class TwitterAdmin(admin.ModelAdmin):
+    def get_display_name(self, obj):
+        return str(obj)
+
+    get_display_name.short_description = 'Display Name'
+    list_display = ('get_display_name', 'name', 'id')
+    search_fields = ['name', 'id']
 
 
 @admin.register(Notification)
@@ -38,10 +77,3 @@ class TwitchLiveAdmin(admin.ModelAdmin):
     search_fields = ['twitch__id', 'twitch__name',]
     date_hierarchy = 'timestamp'
     ordering = ['-timestamp']
-
-
-app = apps.get_app_config('livebot')
-for model_name, model in app.models.items():
-    if model_name in ['notification', 'twitchnotification', 'twitchlive']:
-        continue
-    admin.site.register(model)
