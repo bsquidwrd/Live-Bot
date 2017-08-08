@@ -30,6 +30,44 @@ class Tasks:
     def __unload(self):
         self.task_runner.cancel()
 
+    def populate_info(self):
+        """ Populate all users and servers """
+        for server in self.bot.servers:
+            s = self.get_server(server)
+            for channel in server.channels:
+                c = self.get_channel(s, channel)
+
+    def get_channel(self, server, channel):
+        """
+        Returns a :class:`gaming.models.DiscordChannel` object after getting or creating the Channel
+        """
+        if channel.is_private:
+            return False
+        else:
+            c, created = DiscordChannel.objects.get_or_create(id=channel.id, server=server)
+            try:
+                c.name = channel.name
+                c.save()
+            except Exception as e:
+                Log.objects.create(message="Error trying to get Channel {} object for server {}.\n{}\n{}".format(c, c.server, logify_exception_info(), e))
+            return c
+
+    def get_server(self, server):
+        """
+        Returns a :class:`gaming.models.DiscordServer` object after getting or creating the server
+        """
+        error = False
+        s, created = DiscordServer.objects.get_or_create(id=server.id)
+        try:
+            s.name = server.name
+            s.save()
+        except Exception as e:
+            error = True
+            Log.objects.create(message="Error trying to get Server object for server {}.\n{}\n{}".format(s, logify_exception_info(), e))
+        finally:
+            s.save()
+            return s
+
     async def on_ready(self):
         """
         Bot is loaded, populate information that is needed for everything
@@ -38,6 +76,7 @@ class Tasks:
             print("No Twitch app loaded, unable to run Twitch Tasks")
             self.__unload()
         self.task_runner = self.bot.loop.create_task(self.run_tasks())
+        self.populate_info()
 
     async def run_tasks(self):
         try:
