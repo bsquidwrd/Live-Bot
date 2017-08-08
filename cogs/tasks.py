@@ -32,7 +32,7 @@ class Tasks:
 
     async def on_ready(self):
         """
-        Bot is loaaded, populate information that is needed for everything
+        Bot is loaded, populate information that is needed for everything
         """
         if not self.twitch_app:
             print("No Twitch app loaded, unable to run Twitch Tasks")
@@ -58,14 +58,17 @@ class Tasks:
                 'Client-ID': self.twitch_app.client_id,
             }
 
-            for twitch in twitch_channels:
-                result = requests.get("https://api.twitch.tv/kraken/streams/{0}".format(twitch.name), headers=headers)
-                if not result.ok:
-                    continue
-                result = result.json()
-                if result['stream'] is not None:
-                    if result['stream']['stream_type'] == 'live':
-                        timestamp = parse(result['stream']['created_at'])
+            channels_appended = ",".join([twitch.name for twitch in twitch_channels])
+
+            result = requests.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
+            if not result.ok:
+                return
+
+            for stream in result.json()['streams']:
+                if stream is not None:
+                    if stream['stream_type'] == 'live':
+                        twitch = TwitchChannel.objects.get(id=stream['channel']['_id'])
+                        timestamp = parse(stream['created_at'])
                         live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
                         for notification in twitch.twitchnotification_set.all():
                             live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
@@ -78,22 +81,22 @@ class Tasks:
                                 live_notification = live_notifications.filter(success=False)[0]
                                 log = live_notification.log
                             try:
-                                message = notification.get_message(name=result['stream']['channel']['display_name'], game=result['stream']['game'])
+                                message = notification.get_message(name=stream['channel']['display_name'], game=stream['game'])
                                 if notification.content_type == discord_content_type:
                                     channel = self.bot.get_channel(str(notification.content_object.id))
                                     if channel is None:
                                         raise Exception("Bot returned None for Channel ID {}\n".format(notification.content_object.id))
                                     else:
                                         embed_args = {
-                                            'title': result['stream']['channel']['display_name'],
-                                            # 'description': result['stream']['channel']['status'],
+                                            'title': stream['channel']['display_name'],
+                                            # 'description': stream['channel']['status'],
                                             'url': twitch.url,
                                             'colour': discord.Colour.dark_purple(),
                                         }
                                         embed = discord.Embed(**embed_args)
-                                        embed.set_thumbnail(url=result['stream']['channel']['logo'])
-                                        embed.add_field(name="Title", value=result['stream']['channel']['status'], inline=True)
-                                        # embed.add_field(name="Game", value=result['stream']['game'], inline=True)
+                                        embed.set_thumbnail(url=stream['channel']['logo'])
+                                        embed.add_field(name="Title", value=stream['channel']['status'], inline=True)
+                                        # embed.add_field(name="Game", value=stream['game'], inline=True)
                                         embed.add_field(name="Stream", value=twitch.url, inline=True)
                                         await self.bot.send_message(channel, "{}".format(message), embed=embed)
                                 elif notification.content_type == twitter_content_type:
