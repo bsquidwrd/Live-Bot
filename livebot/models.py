@@ -41,7 +41,7 @@ class DiscordChannel(models.Model):
     server = models.ForeignKey(DiscordServer, verbose_name='Channel Server')
 
     def __str__(self):
-        return '{} - {}'.format(self.server, self.name)
+        return '{}'.format(self.name)
 
     @classmethod
     def get_content_type(cls):

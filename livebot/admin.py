@@ -8,7 +8,7 @@ class TwitchChannelAdmin(admin.ModelAdmin):
         return str(obj)
 
     get_display_name.short_description = 'Display Name'
-    list_display = ('get_display_name', 'name', 'id')
+    list_display = ('get_display_name', 'id')
     search_fields = ['name', 'id']
 
 
@@ -18,7 +18,7 @@ class DiscordServerAdmin(admin.ModelAdmin):
         return str(obj)
 
     get_display_name.short_description = 'Display Name'
-    list_display = ('get_display_name', 'name', 'id')
+    list_display = ('get_display_name', 'id')
     search_fields = ['name', 'id']
 
 
@@ -28,7 +28,7 @@ class DiscordChannelAdmin(admin.ModelAdmin):
         return str(obj)
 
     get_display_name.short_description = 'Display Name'
-    list_display = ('get_display_name', 'name', 'id', 'server')
+    list_display = ('get_display_name', 'id', 'server')
     search_fields = ['name', 'id', 'server__id']
 
 
