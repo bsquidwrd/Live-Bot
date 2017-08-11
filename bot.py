@@ -26,10 +26,6 @@ Hello! I am a bot written by bsquidwrd with a backbone from Danny.
 For the nitty gritty, checkout my GitHub: {0}
 """.format(github_url)
 
-description = """
-Hello! I am a bot written by Danny to provide some nice utilities.
-"""
-
 log = logging.getLogger(__name__)
 
 initial_extensions = (
