@@ -42,8 +42,8 @@ class Admin:
 
     def get_syntax_error(self, e):
         if e.text is None:
-            return f'```py\n{e.__class__.__name__}: {e}\n```'
-        return f'```py\n{e.text}{"^":>{e.offset}}\n{e.__class__.__name__}: {e}```'
+            return '```py\n{e.__class__.__name__}: {e}\n```'
+        return '```py\n{e.text}{"^":>{e.offset}}\n{e.__class__.__name__}: {e}```'
 
     @commands.command(hidden=True)
     async def load(self, ctx, *, module):
@@ -51,7 +51,7 @@ class Admin:
         try:
             self.bot.load_extension(module)
         except Exception as e:
-            await ctx.send(f'```py\n{traceback.format_exc()}\n```')
+            await ctx.send('```py\n{traceback.format_exc()}\n```')
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
@@ -61,7 +61,7 @@ class Admin:
         try:
             self.bot.unload_extension(module)
         except Exception as e:
-            await ctx.send(f'```py\n{traceback.format_exc()}\n```')
+            await ctx.send('```py\n{traceback.format_exc()}\n```')
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
@@ -72,7 +72,7 @@ class Admin:
             self.bot.unload_extension(module)
             self.bot.load_extension(module)
         except Exception as e:
-            await ctx.send(f'```py\n{traceback.format_exc()}\n```')
+            await ctx.send('```py\n{traceback.format_exc()}\n```')
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
