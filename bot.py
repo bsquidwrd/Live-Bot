@@ -35,7 +35,7 @@ initial_extensions = (
 
 def _prefix_callable(bot, msg):
     user_id = bot.user.id
-    base = ['<@!{user_id}> ', '<@{user_id}> ', '?livebot ', '!livebot ']
+    base = [f'<@!{user_id}> ', f'<@{user_id}> ', '?livebot ', '!livebot ']
     return base
 
 class LiveBot(commands.AutoShardedBot):
@@ -55,7 +55,7 @@ class LiveBot(commands.AutoShardedBot):
             try:
                 self.load_extension(extension)
             except Exception as e:
-                print('Failed to load extension {extension}.', file=sys.stderr)
+                print(f'Failed to load extension {extension}.', file=sys.stderr)
                 traceback.print_exc()
 
     async def on_command_error(self, ctx, error):
@@ -64,9 +64,9 @@ class LiveBot(commands.AutoShardedBot):
         elif isinstance(error, commands.DisabledCommand):
             await ctx.author.send('Sorry. This command is disabled and cannot be used.')
         elif isinstance(error, commands.CommandInvokeError):
-            print('In {ctx.command.qualified_name}:', file=sys.stderr)
+            print(f'In {ctx.command.qualified_name}:', file=sys.stderr)
             traceback.print_tb(error.original.__traceback__)
-            print('{error.original.__class__.__name__}: {error.original}', file=sys.stderr)
+            print(f'{error.original.__class__.__name__}: {error.original}', file=sys.stderr)
 
     def get_guild_prefixes(self, guild, *, local_inject=_prefix_callable):
         proxy_msg = discord.Object(id=None)
@@ -85,7 +85,7 @@ class LiveBot(commands.AutoShardedBot):
         if not hasattr(self, 'uptime'):
             self.uptime = datetime.datetime.utcnow()
 
-        print('Ready: {self.user} (ID: {self.user.id})')
+        print(f'Ready: {self.user} (ID: {self.user.id})')
         live_bot_game = discord.Game(name='!livebot help', url=github_url, type=0)
         await bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
