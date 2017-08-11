@@ -23,22 +23,22 @@ class TwitchChannel(models.Model):
         verbose_name_plural = 'Twitch Channels'
 
 
-class DiscordServer(models.Model):
-    id = models.BigIntegerField(primary_key=True, verbose_name='Server ID')
-    name = models.CharField(max_length=255, verbose_name='Server Name')
+class DiscordGuild(models.Model):
+    id = models.BigIntegerField(primary_key=True, verbose_name='Guild ID')
+    name = models.CharField(max_length=255, verbose_name='Guild Name')
 
     def __str__(self):
         return '{}'.format(self.name)
 
     class Meta:
-        verbose_name = 'Discord Server'
-        verbose_name_plural = 'Discord Servers'
+        verbose_name = 'Discord Guild'
+        verbose_name_plural = 'Discord Guilds'
 
 
 class DiscordChannel(models.Model):
     id = models.BigIntegerField(primary_key=True, verbose_name='Channel ID')
     name = models.CharField(max_length=255, verbose_name='Channel Name')
-    server = models.ForeignKey(DiscordServer, verbose_name='Channel Server')
+    guild = models.ForeignKey(DiscordGuild, verbose_name='Channel Guild')
 
     def __str__(self):
         return '{}'.format(self.name)

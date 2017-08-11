@@ -1,6 +1,6 @@
 from discord.ext import commands
 from discord.enums import ChannelType
-from cogs.utils import checks, config, logify_exception_info, logify_dict, communicate
+from cogs.utils import checks, logify_exception_info, logify_dict, communicate
 import asyncio
 import discord
 import os
@@ -26,47 +26,51 @@ class Tasks:
     def __init__(self, bot):
         self.bot = bot
         self.twitch_app = SocialApp.objects.get_current('twitch')
+        self._task = bot.loop.create_task(self.run_tasks())
 
     def __unload(self):
-        self.task_runner.cancel()
+        self._task.cancel()
+
+    async def on_guild_join(self, guild):
+        self.get_guild(guild)
 
     def populate_info(self):
-        """ Populate all users and servers """
-        for server in self.bot.servers:
-            s = self.get_server(server)
-            for channel in server.channels:
-                c = self.get_channel(s, channel)
+        """ Populate all users and guilds """
+        for guild in self.bot.guilds:
+            g = self.get_guild(guild)
+            for channel in guild.channels:
+                c = self.get_channel(g, channel)
 
-    def get_channel(self, server, channel):
+    def get_channel(self, guild, channel):
         """
         Returns a :class:`gaming.models.DiscordChannel` object after getting or creating the Channel
         """
-        if channel.is_private:
-            return False
-        else:
-            c, created = DiscordChannel.objects.get_or_create(id=channel.id, server=server)
+        if type(channel) == discord.channel.TextChannel:
+            c, created = DiscordChannel.objects.get_or_create(id=channel.id, guild=guild)
             try:
                 c.name = channel.name
                 c.save()
             except Exception as e:
-                Log.objects.create(message="Error trying to get Channel {} object for server {}.\n{}\n{}".format(c, c.server, logify_exception_info(), e))
-            return c
+                Log.objects.create(message="Error trying to get Channel {} object for guild {}.\n{}\n{}".format(c, c.guild, logify_exception_info(), e))
+                return c
+        else:
+            return False
 
-    def get_server(self, server):
+    def get_guild(self, guild):
         """
-        Returns a :class:`gaming.models.DiscordServer` object after getting or creating the server
+        Returns a :class:`gaming.models.DiscordGuild` object after getting or creating the guild
         """
         error = False
-        s, created = DiscordServer.objects.get_or_create(id=server.id)
+        g, created = DiscordGuild.objects.get_or_create(id=guild.id)
         try:
-            s.name = server.name
-            s.save()
+            g.name = guild.name
+            g.save()
         except Exception as e:
             error = True
-            Log.objects.create(message="Error trying to get Server object for server {}.\n{}\n{}".format(s, logify_exception_info(), e))
+            Log.objects.create(message="Error trying to get DiscordGuild object for guild {}.\n{}\n{}".format(g, logify_exception_info(), e))
         finally:
-            s.save()
-            return s
+            g.save()
+            return g
 
     async def on_ready(self):
         """
@@ -75,12 +79,11 @@ class Tasks:
         if not self.twitch_app:
             print("No Twitch app loaded, unable to run Twitch Tasks")
             self.__unload()
-        self.task_runner = self.bot.loop.create_task(self.run_tasks())
         self.populate_info()
 
     async def run_tasks(self):
         try:
-            while not self.bot.is_closed:
+            while not self.bot.is_closed():
                 await self.run_scheduled_tasks()
                 await asyncio.sleep(15)
         except asyncio.CancelledError as e:
@@ -122,7 +125,7 @@ class Tasks:
                             try:
                                 message = notification.get_message(name=stream['channel']['display_name'], game=stream['game'])
                                 if notification.content_type == discord_content_type:
-                                    channel = self.bot.get_channel(str(notification.content_object.id))
+                                    channel = self.bot.get_channel(int(notification.content_object.id))
                                     if channel is None:
                                         raise Exception("Bot returned None for Channel ID {}\n".format(notification.content_object.id))
                                     else:
@@ -137,7 +140,7 @@ class Tasks:
                                         embed.add_field(name="Title", value=stream['channel']['status'], inline=True)
                                         # embed.add_field(name="Game", value=stream['game'], inline=True)
                                         embed.add_field(name="Stream", value=twitch.url, inline=True)
-                                        await self.bot.send_message(channel, "{}".format(message), embed=embed)
+                                        await channel.send("{}".format(message), embed=embed)
                                 elif notification.content_type == twitter_content_type:
                                     twitter = communicate.Twitter(log=log, uid=notification.object_id)
                                     twitter.tweet('{} {}'.format(message[:115], twitch.url))

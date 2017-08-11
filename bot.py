@@ -2,13 +2,14 @@ from discord.ext import commands
 import discord
 from cogs.utils import checks
 import datetime, re
-import asyncio
+import json, asyncio
 import copy
 import logging
 import traceback
+import aiohttp
 import sys
-import os
 from collections import Counter
+import os
 
 import web.wsgi
 from cogs.utils.utils import logify_exception_info, logify_dict
@@ -25,108 +26,118 @@ Hello! I am a bot written by bsquidwrd with a backbone from Danny.
 For the nitty gritty, checkout my GitHub: {0}
 """.format(github_url)
 
-initial_extensions = [
+description = """
+Hello! I am a bot written by Danny to provide some nice utilities.
+"""
+
+log = logging.getLogger(__name__)
+
+initial_extensions = (
     'cogs.admin',
     'cogs.tasks',
-]
+)
 
-discord_logger = logging.getLogger('discord')
-discord_logger.setLevel(logging.CRITICAL)
-log = logging.getLogger()
-log.setLevel(logging.INFO)
-bot_start_time = datetime.datetime.utcnow()
+def _prefix_callable(bot, msg):
+    user_id = bot.user.id
+    base = [f'<@!{user_id}> ', f'<@{user_id}> ', '?livebot ', '!livebot ']
+    return base
 
-logs_dir = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'logs', bot_start_time.strftime('%Y'), bot_start_time.strftime('%m'))
-os.makedirs(logs_dir, exist_ok=True)
-log_filename = '{0}/live_bot.{1}.log'.format(logs_dir, bot_start_time.strftime('%Y-%m-%d.%H-%M-%S'))
+class LiveBot(commands.AutoShardedBot):
+    def __init__(self):
+        super().__init__(command_prefix=_prefix_callable, description=description,
+                         pm_help=None, help_attrs=dict(hidden=True))
 
-handler = logging.FileHandler(filename=log_filename, encoding='utf-8', mode='w')
-log.addHandler(handler)
-help_attrs = dict(hidden=True)
-prefix = ['!livebot ']
-bot = commands.Bot(command_prefix=prefix, description=description, pm_help=None, help_attrs=help_attrs, log=log)
+        self.client_id = os.environ['LIVE_BOT_CLIENT_ID']
+        self.client_token = os.environ['LIVE_BOT_TOKEN']
+        self.session = aiohttp.ClientSession(loop=self.loop)
 
-@bot.event
-async def on_command_error(error, ctx):
-    if isinstance(error, commands.NoPrivateMessage):
-        await bot.send_message(ctx.message.author, 'This command cannot be used in private messages.')
-    elif isinstance(error, commands.DisabledCommand):
-        await bot.send_message(ctx.message.author, 'Sorry. This command is disabled and cannot be used.')
-    elif isinstance(error, commands.CommandInvokeError):
-        print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
-        traceback.print_tb(error.original.__traceback__)
-        print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
+        self.add_command(self.restart)
+        self.add_command(self.give_github_url)
+        self.add_command(self.do)
 
-@bot.event
-async def on_ready():
-    print('Logged in as:')
-    print('Username: ' + bot.user.name)
-    print('ID: ' + bot.user.id)
-    print('------')
-    log.info('Logged in as:\nUsername: {0.user.name}\nID: {0.user.id}\n------'.format(bot))
-    if not hasattr(bot, 'uptime'):
-        bot.uptime = bot_start_time
-    live_bot_game = discord.Game(name='!livebot help', url=github_url, type=0)
-    await bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
+        for extension in initial_extensions:
+            try:
+                self.load_extension(extension)
+            except Exception as e:
+                print(f'Failed to load extension {extension}.', file=sys.stderr)
+                traceback.print_exc()
 
-@bot.event
-async def on_resumed():
-    print('resumed...')
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.author.send('This command cannot be used in private messages.')
+        elif isinstance(error, commands.DisabledCommand):
+            await ctx.author.send('Sorry. This command is disabled and cannot be used.')
+        elif isinstance(error, commands.CommandInvokeError):
+            print(f'In {ctx.command.qualified_name}:', file=sys.stderr)
+            traceback.print_tb(error.original.__traceback__)
+            print(f'{error.original.__class__.__name__}: {error.original}', file=sys.stderr)
 
-@bot.event
-async def on_command(command, ctx):
-    bot.commands_used[command.name] += 1
-    message = ctx.message
-    destination = None
-    if message.channel.is_private:
-        destination = 'Private Message'
-    else:
-        destination = '#{0.channel.name} ({0.server.name})'.format(message)
-    print('{0.timestamp}: {0.author.name} in {1}: {0.content}'.format(message, destination))
-    log.info('{0.timestamp}: {0.author.name} in {1}: {0.content}'.format(message, destination))
+    def get_guild_prefixes(self, guild, *, local_inject=_prefix_callable):
+        proxy_msg = discord.Object(id=None)
+        proxy_msg.guild = guild
+        return local_inject(self, proxy_msg)
 
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
+    async def set_guild_prefixes(self, guild, prefixes):
+        if len(prefixes) == 0:
+            await self.prefixes.put(guild.id, [])
+        elif len(prefixes) > 10:
+            raise RuntimeError('Cannot have more than 10 custom prefixes.')
+        else:
+            await self.prefixes.put(guild.id, sorted(set(prefixes), reverse=True))
 
-    await bot.process_commands(message)
+    async def on_ready(self):
+        if not hasattr(self, 'uptime'):
+            self.uptime = datetime.datetime.utcnow()
 
-@bot.command(pass_context=True, hidden=True)
-@checks.is_owner()
-async def do(ctx, times : int, *, command):
-    """Repeats a command a specified number of times"""
-    msg = copy.copy(ctx.message)
-    msg.content = command
-    for i in range(times):
-        await bot.process_commands(msg)
+        print(f'Ready: {self.user} (ID: {self.user.id})')
+        live_bot_game = discord.Game(name='!livebot help', url=github_url, type=0)
+        await bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
-@bot.command(name='git')
-async def give_github_url():
-    """Gives the URL of the Github repo"""
-    await bot.say('You can find out more about me here: {}'.format(github_url))
+    async def on_resumed(self):
+        print('resumed...')
 
-@bot.command(aliases=['stop'], hidden=True)
-@checks.is_owner()
-async def restart():
-    """Restarts the bot"""
-    await bot.say(':wave:')
-    await bot.logout()
+    async def process_commands(self, message):
+        ctx = await self.get_context(message)
+
+        if ctx.command is None:
+            return
+
+        await self.invoke(ctx)
+
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+        await self.process_commands(message)
+
+    async def close(self):
+        await super().close()
+        await self.session.close()
+
+    def run(self):
+        super().run(self.client_token, reconnect=True)
+
+    @commands.command(name='git')
+    async def give_github_url(self, ctx):
+        """Gives the URL of the Github repo"""
+        await ctx.message.channel.send('You can find out more about me here: {}'.format(github_url))
+
+    @commands.command(aliases=['stop'], hidden=True)
+    @commands.is_owner()
+    async def restart(self, ctx):
+        """Restarts the bot"""
+        await ctx.message.channel.send(':wave:')
+        await self.logout()
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def do(self, ctx, times: int, *, command):
+        """Repeats a command a specified number of times."""
+        msg = copy.copy(ctx.message)
+        msg.content = command
+        for i in range(times):
+            await self.process_commands(msg)
+
 
 if __name__ == '__main__':
-    if any('debug' in arg.lower() for arg in sys.argv):
-        bot.command_prefix = '$'
-
-    bot.client_id = os.environ['LIVE_BOT_CLIENT_ID']
-    bot.commands_used = Counter()
-    for extension in initial_extensions:
-        try:
-            bot.load_extension(extension)
-        except Exception as e:
-            print('Failed to load extension {}\n{}: {}'.format(extension, type(e).__name__, e))
-
-    bot.run(os.environ['LIVE_BOT_TOKEN'])
-    handlers = log.handlers[:]
-    for hdlr in handlers:
-        hdlr.close()
-        log.removeHandler(hdlr)
+    bot = LiveBot()
+    bot.run()

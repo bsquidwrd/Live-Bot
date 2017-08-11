@@ -12,8 +12,8 @@ class TwitchChannelAdmin(admin.ModelAdmin):
     search_fields = ['name', 'id']
 
 
-@admin.register(DiscordServer)
-class DiscordServerAdmin(admin.ModelAdmin):
+@admin.register(DiscordGuild)
+class DiscordGuildAdmin(admin.ModelAdmin):
     def get_display_name(self, obj):
         return str(obj)
 
@@ -28,8 +28,8 @@ class DiscordChannelAdmin(admin.ModelAdmin):
         return str(obj)
 
     get_display_name.short_description = 'Display Name'
-    list_display = ('get_display_name', 'id', 'server')
-    search_fields = ['name', 'id', 'server__id']
+    list_display = ('get_display_name', 'id', 'guild')
+    search_fields = ['name', 'id', 'guild__id']
 
 
 @admin.register(Twitter)
@@ -77,3 +77,6 @@ class TwitchLiveAdmin(admin.ModelAdmin):
     search_fields = ['twitch__id', 'twitch__name',]
     date_hierarchy = 'timestamp'
     ordering = ['-timestamp']
+
+
+admin.site.register(Log)
