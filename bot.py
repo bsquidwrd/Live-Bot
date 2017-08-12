@@ -31,7 +31,7 @@ initial_extensions = (
     'cogs.admin',
     'cogs.tasks',
     'cogs.signals',
-    # 'cogs.stats',
+    'cogs.stats',
     'cogs.meta',
     # 'cogs.livebot',
 )
