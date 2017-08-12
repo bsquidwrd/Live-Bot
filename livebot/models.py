@@ -208,3 +208,5 @@ def random_key(length=50):
     for i in range(length):
         key += random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
     return key
+
+import livebot.signals

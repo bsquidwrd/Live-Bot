@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from allauth.socialaccount.signals import social_account_added
 
 from .models import *
-from ..utils import logify_exception_info
+from .utils import logify_exception_info
 
 
 @receiver(pre_save, sender=Log)
@@ -13,13 +13,6 @@ def generate_log_token(sender, instance, *args, **kwargs):
     if isinstance(instance, Log):
         if instance.message_token is None or instance.message_token == '':
             instance.generate_log_token(save=False)
-
-
-@receiver(pre_save, sender=Quote)
-def generate_quote_id(sender, instance, *args, **kwargs):
-    if isinstance(instance, Quote):
-        if instance.quote_id is None or instance.quote_id == '':
-            instance.generate_quote_id(save=False)
 
 
 @receiver(post_save, sender=Log)
