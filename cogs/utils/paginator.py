@@ -81,13 +81,13 @@ class Pages:
         entries = self.get_page(page)
         p = []
         for index, entry in enumerate(entries, 1 + ((page - 1) * self.per_page)):
-            p.append('{index}. {entry}')
+            p.append(f'{index}. {entry}')
 
         if self.maximum_pages > 1:
             if self.show_entry_count:
-                text = 'Page {page}/{self.maximum_pages} ({len(self.entries)} entries)'
+                text = f'Page {page}/{self.maximum_pages} ({len(self.entries)} entries)'
             else:
-                text = 'Page {page}/{self.maximum_pages}'
+                text = f'Page {page}/{self.maximum_pages}'
 
             self.embed.set_footer(text=text)
 
@@ -158,7 +158,7 @@ class Pages:
             if page != 0 and page <= self.maximum_pages:
                 await self.show_page(page)
             else:
-                to_delete.append(await self.channel.send('Invalid page given. ({page}/{self.maximum_pages})'))
+                to_delete.append(await self.channel.send(f'Invalid page given. ({page}/{self.maximum_pages})'))
                 await asyncio.sleep(5)
 
         try:
@@ -173,10 +173,10 @@ class Pages:
                         'reactions. They are as follows:\n')
 
         for (emoji, func) in self.reaction_emojis:
-            messages.append('{emoji} {func.__doc__}')
+            messages.append(f'{emoji} {func.__doc__}')
 
         self.embed.description = '\n'.join(messages)
-        self.embed.set_footer(text='We were on page {self.current_page} before this message.')
+        self.embed.set_footer(text=f'We were on page {self.current_page} before this message.')
         await self.message.edit(embed=self.embed)
 
         async def go_back_to_current_page():
@@ -245,9 +245,9 @@ class FieldPages(Pages):
 
         if self.maximum_pages > 1:
             if self.show_entry_count:
-                text = 'Page {page}/{self.maximum_pages} ({len(self.entries)} entries)'
+                text = f'Page {page}/{self.maximum_pages} ({len(self.entries)} entries)'
             else:
-                text = 'Page {page}/{self.maximum_pages}'
+                text = f'Page {page}/{self.maximum_pages}'
 
             self.embed.set_footer(text=text)
 
@@ -284,7 +284,7 @@ def cleanup_prefix(bot, prefix):
     if m:
         user = bot.get_user(int(m.group(1)))
         if user:
-            return '@{user.name} '
+            return f'@{user.name} '
     return prefix
 
 async def _can_run(cmd, ctx):
@@ -312,13 +312,13 @@ def _command_signature(cmd):
             # do [name] since [name=None] or [name=] are not exactly useful for the user.
             should_print = param.default if isinstance(param.default, str) else param.default is not None
             if should_print:
-                result.append('[{name}={param.default!r}]')
+                result.append(f'[{name}={param.default!r}]')
             else:
-                result.append('[{name}]')
+                result.append(f'[{name}]')
         elif param.kind == param.VAR_POSITIONAL:
-            result.append('[{name}...]')
+            result.append(f'[{name}...]')
         else:
-            result.append('<{name}>')
+            result.append(f'<{name}>')
 
     return ' '.join(result)
 
@@ -339,12 +339,9 @@ class HelpPaginator(Pages):
         entries = [cmd for cmd in entries if (await _can_run(cmd, ctx)) and not cmd.hidden]
 
         self = cls(ctx, entries)
-        self.title = '{cog_name} Commands'
+        self.title = f'{cog_name} Commands'
         self.description = inspect.getdoc(cog)
         self.prefix = cleanup_prefix(ctx.bot, ctx.prefix)
-
-        # no longer need the database
-        await ctx.release()
 
         return self
 
@@ -361,12 +358,11 @@ class HelpPaginator(Pages):
         self.title = command.signature
 
         if command.description:
-            self.description = '{command.description}\n\n{command.help}'
+            self.description = f'{command.description}\n\n{command.help}'
         else:
             self.description = command.help or 'No help given.'
 
         self.prefix = cleanup_prefix(ctx.bot, ctx.prefix)
-        await ctx.release()
         return self
 
     @classmethod
@@ -397,7 +393,6 @@ class HelpPaginator(Pages):
 
         self = cls(ctx, nested_pages, per_page=1) # this forces the pagination session
         self.prefix = cleanup_prefix(ctx.bot, ctx.prefix)
-        await ctx.release()
 
         # swap the get_page implementation with one that supports our style of pagination
         self.get_page = self.get_bot_page
@@ -408,7 +403,7 @@ class HelpPaginator(Pages):
 
     def get_bot_page(self, page):
         cog, description, commands = self.entries[page - 1]
-        self.title = '{cog} Commands'
+        self.title = f'{cog} Commands'
         self.description = description
         return commands
 
@@ -420,7 +415,7 @@ class HelpPaginator(Pages):
         self.embed.description = self.description
         self.embed.title = self.title
 
-        self.embed.set_footer(text='Use "{self.prefix}help command" for more info on a command.')
+        self.embed.set_footer(text=f'Use "{self.prefix}help command" for more info on a command.')
 
         signature = _command_signature
 
@@ -428,7 +423,7 @@ class HelpPaginator(Pages):
             self.embed.add_field(name=signature(entry), value=entry.short_doc or "No help given", inline=False)
 
         if self.maximum_pages:
-            self.embed.set_author(name='Page {page}/{self.maximum_pages} ({self.total} commands)')
+            self.embed.set_author(name=f'Page {page}/{self.maximum_pages} ({self.total} commands)')
 
         if not self.paginating:
             return await self.channel.send(embed=self.embed)
@@ -453,11 +448,11 @@ class HelpPaginator(Pages):
         self.embed.title = 'Paginator help'
         self.embed.description = 'Hello! Welcome to the help page.'
 
-        messages = ['{emoji} {func.__doc__}' for emoji, func in self.reaction_emojis]
+        messages = [f'{emoji} {func.__doc__}' for emoji, func in self.reaction_emojis]
         self.embed.clear_fields()
         self.embed.add_field(name='What are these reactions for?', value='\n'.join(messages), inline=False)
 
-        self.embed.set_footer(text='We were on page {self.current_page} before this message.')
+        self.embed.set_footer(text=f'We were on page {self.current_page} before this message.')
         await self.message.edit(embed=self.embed)
 
         async def go_back_to_current_page():
@@ -487,7 +482,7 @@ class HelpPaginator(Pages):
         for name, value in entries:
             self.embed.add_field(name=name, value=value, inline=False)
 
-        self.embed.set_footer(text='We were on page {self.current_page} before this message.')
+        self.embed.set_footer(text=f'We were on page {self.current_page} before this message.')
         await self.message.edit(embed=self.embed)
 
         async def go_back_to_current_page():

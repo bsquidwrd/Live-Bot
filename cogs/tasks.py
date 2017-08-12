@@ -1,13 +1,14 @@
 from discord.ext import commands
 from discord.enums import ChannelType
 from cogs.utils import checks, logify_exception_info, logify_dict, communicate
+from datetime import datetime
+from dateutil.parser import parse
 import asyncio
 import discord
 import os
 import requests
 import logging
 import urllib
-from dateutil.parser import parse
 
 import web.wsgi
 from livebot.models import *
@@ -129,17 +130,21 @@ class Tasks:
                                     if channel is None:
                                         raise Exception("Bot returned None for Channel ID {}\n".format(notification.content_object.id))
                                     else:
+                                        app_info = await self.bot.application_info()
                                         embed_args = {
                                             'title': stream['channel']['display_name'],
-                                            # 'description': stream['channel']['status'],
+                                            'description': stream['channel']['status'],
                                             'url': twitch.url,
                                             'colour': discord.Colour.dark_purple(),
+                                            # 'timestamp': datetime.utcnow(),
                                         }
                                         embed = discord.Embed(**embed_args)
                                         embed.set_thumbnail(url=stream['channel']['logo'])
-                                        embed.add_field(name="Title", value=stream['channel']['status'], inline=True)
+                                        embed.add_field(name="Game", value=stream['game'], inline=True)
                                         # embed.add_field(name="Game", value=stream['game'], inline=True)
                                         embed.add_field(name="Stream", value=twitch.url, inline=True)
+                                        # embed.set_image(url=stream['preview']['medium'])
+                                        embed.set_footer(text=log.message_token)
                                         await channel.send("{}".format(message), embed=embed)
                                 elif notification.content_type == twitter_content_type:
                                     twitter = communicate.Twitter(log=log, uid=notification.object_id)

@@ -23,14 +23,14 @@ github_url = 'https://github.com/bsquidwrd/Live-Bot'
 
 description = """
 Hello! I am a bot written by bsquidwrd with a backbone from Danny.
-For the nitty gritty, checkout my GitHub: {0}
-""".format(github_url)
+"""
 
 log = logging.getLogger(__name__)
 
 initial_extensions = (
     'cogs.admin',
     'cogs.tasks',
+    'cogs.meta',
 )
 
 def _prefix_callable(bot, msg):
@@ -43,12 +43,12 @@ class LiveBot(commands.AutoShardedBot):
         super().__init__(command_prefix=_prefix_callable, description=description,
                          pm_help=None, help_attrs=dict(hidden=True))
 
-        self.client_id = os.environ['LIVE_BOT_CLIENT_ID']
+        self.client_id = int(os.environ['LIVE_BOT_CLIENT_ID'])
         self.client_token = os.environ['LIVE_BOT_TOKEN']
+        self.owner_id = int(os.environ['LIVE_BOT_OWNER_ID'])
         self.session = aiohttp.ClientSession(loop=self.loop)
+        self.github_url = github_url
 
-        self.add_command(self.restart)
-        self.add_command(self.give_github_url)
         self.add_command(self.do)
 
         for extension in initial_extensions:
@@ -68,19 +68,6 @@ class LiveBot(commands.AutoShardedBot):
             traceback.print_tb(error.original.__traceback__)
             print(f'{error.original.__class__.__name__}: {error.original}', file=sys.stderr)
 
-    def get_guild_prefixes(self, guild, *, local_inject=_prefix_callable):
-        proxy_msg = discord.Object(id=None)
-        proxy_msg.guild = guild
-        return local_inject(self, proxy_msg)
-
-    async def set_guild_prefixes(self, guild, prefixes):
-        if len(prefixes) == 0:
-            await self.prefixes.put(guild.id, [])
-        elif len(prefixes) > 10:
-            raise RuntimeError('Cannot have more than 10 custom prefixes.')
-        else:
-            await self.prefixes.put(guild.id, sorted(set(prefixes), reverse=True))
-
     async def on_ready(self):
         if not hasattr(self, 'uptime'):
             self.uptime = datetime.datetime.utcnow()
@@ -98,11 +85,21 @@ class LiveBot(commands.AutoShardedBot):
         if ctx.command is None:
             return
 
+        destination = None
+        if type(message.channel) == discord.abc.PrivateChannel:
+            destination = 'Private Message'
+        else:
+            destination = '#{0.channel.name} ({0.guild.name})'.format(message)
+        log_message = '{0.created_at}: {0.author.name} in {1}: {0.content}'.format(message, destination)
+        print(log_message)
+        log.info(log_message)
+
         await self.invoke(ctx)
 
     async def on_message(self, message):
         if message.author.bot:
             return
+
         await self.process_commands(message)
 
     async def close(self):
@@ -111,18 +108,6 @@ class LiveBot(commands.AutoShardedBot):
 
     def run(self):
         super().run(self.client_token, reconnect=True)
-
-    @commands.command(name='git')
-    async def give_github_url(self, ctx):
-        """Gives the URL of the Github repo"""
-        await ctx.message.channel.send('You can find out more about me here: {}'.format(github_url))
-
-    @commands.command(aliases=['stop'], hidden=True)
-    @commands.is_owner()
-    async def restart(self, ctx):
-        """Restarts the bot"""
-        await ctx.message.channel.send(':wave:')
-        await self.logout()
 
     @commands.command(hidden=True)
     @commands.is_owner()
