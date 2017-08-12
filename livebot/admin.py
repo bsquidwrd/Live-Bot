@@ -30,6 +30,9 @@ class DiscordChannelAdmin(admin.ModelAdmin):
     get_display_name.short_description = 'Display Name'
     list_display = ('get_display_name', 'id', 'guild')
     search_fields = ['name', 'id', 'guild__id']
+    list_filter = (
+        ('guild', admin.RelatedOnlyFieldListFilter),
+    )
 
 
 @admin.register(Twitter)
@@ -50,8 +53,10 @@ class NotificationAdmin(admin.ModelAdmin):
     get_display_name.short_description = 'Display Name'
 
     list_display = ('get_display_name', 'content_type', 'content_object', 'success')
-    list_filter = ('content_type',)
     search_fields = ['live__twitch__id', 'live__twitch__name', 'object_id']
+    list_filter = (
+        ('content_type', admin.RelatedOnlyFieldListFilter),
+    )
 
 
 @admin.register(TwitchNotification)
@@ -62,8 +67,10 @@ class TwitchNotificationAdmin(admin.ModelAdmin):
     get_display_name.short_description = 'Display Name'
 
     list_display = ('get_display_name', 'content_type', 'content_object')
-    list_filter = ('content_type',)
     search_fields = ['twitch__id', 'twitch__name', 'object_id']
+    list_filter = (
+        ('content_type', admin.RelatedOnlyFieldListFilter),
+    )
 
 
 @admin.register(TwitchLive)
