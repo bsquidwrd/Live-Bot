@@ -30,7 +30,10 @@ log = logging.getLogger(__name__)
 initial_extensions = (
     'cogs.admin',
     'cogs.tasks',
+    'cogs.signals',
+    # 'cogs.stats',
     'cogs.meta',
+    # 'cogs.livebot',
 )
 
 def _prefix_callable(bot, msg):
@@ -46,6 +49,7 @@ class LiveBot(commands.AutoShardedBot):
         self.client_id = int(os.environ['LIVE_BOT_CLIENT_ID'])
         self.client_token = os.environ['LIVE_BOT_TOKEN']
         self.owner_id = int(os.environ['LIVE_BOT_OWNER_ID'])
+        self.bots_key = os.environ.get('LIVE_BOT_DBOTS_KEY', None)
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.github_url = github_url
 

@@ -1,18 +1,12 @@
 from discord.ext import commands
-from discord.enums import ChannelType
-from cogs.utils import checks, logify_exception_info, logify_dict, communicate
-from datetime import datetime
+from cogs.utils import logify_exception_info, logify_dict, communicate
 from dateutil.parser import parse
 import asyncio
 import discord
-import os
 import requests
-import logging
-import urllib
 
 import web.wsgi
 from livebot.models import *
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
 from allauth.socialaccount.models import SocialApp
 
@@ -32,47 +26,6 @@ class Tasks:
     def __unload(self):
         self._task.cancel()
 
-    async def on_guild_join(self, guild):
-        self.get_guild(guild)
-
-    def populate_info(self):
-        """ Populate all users and guilds """
-        for guild in self.bot.guilds:
-            g = self.get_guild(guild)
-            for channel in guild.channels:
-                c = self.get_channel(g, channel)
-
-    def get_channel(self, guild, channel):
-        """
-        Returns a :class:`gaming.models.DiscordChannel` object after getting or creating the Channel
-        """
-        if type(channel) == discord.channel.TextChannel:
-            c, created = DiscordChannel.objects.get_or_create(id=channel.id, guild=guild)
-            try:
-                c.name = channel.name
-                c.save()
-            except Exception as e:
-                Log.objects.create(message="Error trying to get Channel {} object for guild {}.\n{}\n{}".format(c, c.guild, logify_exception_info(), e))
-                return c
-        else:
-            return False
-
-    def get_guild(self, guild):
-        """
-        Returns a :class:`gaming.models.DiscordGuild` object after getting or creating the guild
-        """
-        error = False
-        g, created = DiscordGuild.objects.get_or_create(id=guild.id)
-        try:
-            g.name = guild.name
-            g.save()
-        except Exception as e:
-            error = True
-            Log.objects.create(message="Error trying to get DiscordGuild object for guild {}.\n{}\n{}".format(g, logify_exception_info(), e))
-        finally:
-            g.save()
-            return g
-
     async def on_ready(self):
         """
         Bot is loaded, populate information that is needed for everything
@@ -80,7 +33,6 @@ class Tasks:
         if not self.twitch_app:
             print("No Twitch app loaded, unable to run Twitch Tasks")
             self.__unload()
-        self.populate_info()
 
     async def run_tasks(self):
         try:
@@ -136,7 +88,6 @@ class Tasks:
                                             'description': stream['channel']['status'],
                                             'url': twitch.url,
                                             'colour': discord.Colour.dark_purple(),
-                                            # 'timestamp': datetime.utcnow(),
                                         }
                                         embed = discord.Embed(**embed_args)
                                         embed.set_thumbnail(url=stream['channel']['logo'])
