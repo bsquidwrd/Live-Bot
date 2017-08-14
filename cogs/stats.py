@@ -12,20 +12,21 @@ class Stats:
         self.bot = bot
 
     async def update(self):
-        guild_count = len(self.bot.guilds)
+        if not self.bot.debug_mode:
+            guild_count = len(self.bot.guilds)
 
-        payload = json.dumps({
-            'server_count': guild_count
-        })
+            payload = json.dumps({
+                'server_count': guild_count
+            })
 
-        headers = {
-            'authorization': self.bot.bots_key,
-            'content-type': 'application/json'
-        }
+            headers = {
+                'authorization': self.bot.bots_key,
+                'content-type': 'application/json'
+            }
 
-        url = f'{DISCORD_BOTS_API}/bots/{self.bot.user.id}/stats'
-        async with self.bot.session.post(url, data=payload, headers=headers) as resp:
-            log.info(f'DBots statistics returned {resp.status} for {payload}')
+            url = f'{DISCORD_BOTS_API}/bots/{self.bot.user.id}/stats'
+            async with self.bot.session.post(url, data=payload, headers=headers) as resp:
+                log.info(f'DBots statistics returned {resp.status} for {payload}')
 
     async def on_guild_join(self, guild):
         await self.update()
