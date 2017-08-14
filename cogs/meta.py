@@ -74,13 +74,7 @@ class Meta:
         # try to access the code itself
         src = obj.callback.__code__
         lines, firstlineno = inspect.getsourcelines(src)
-        if not obj.callback.__module__.startswith('discord'):
-            # not a built-in command
-            location = os.path.relpath(src.co_filename).replace('\\', '/')
-        else:
-            location = obj.callback.__module__.replace('.', '/') + '.py'
-            location = location.replace(os.environ['LIVE_BOT_BASE_DIR'], "")
-            source_url = 'https://github.com/bsquidwrd/Live-Bot'
+        location = obj.callback.__module__.replace('.', '/') + '.py'
 
         final_url = f'<{source_url}/blob/master/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
         await ctx.send(final_url)
