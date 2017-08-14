@@ -34,7 +34,7 @@ class LiveBot:
         """
         pass
 
-    @monitor_command.command(name="add")
+    @monitor_command.command(aliases=["edit"], name="add")
     async def monitor_add_command(self, ctx):
         """
         Start monitoring a channel for when they go live
@@ -391,13 +391,6 @@ class LiveBot:
             await wait_message.delete()
         except:
             pass
-
-    @monitor_command.command(name="edit")
-    async def monitor_edit_command(self, ctx):
-        """
-        Edit what happens when a channel goes live
-        """
-        await ctx.send("This command is not yet implemented. Please try again at a later date.")
 
 
 def setup(bot):
