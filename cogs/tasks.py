@@ -38,7 +38,7 @@ class Tasks:
         try:
             while not self.bot.is_closed():
                 await self.run_scheduled_tasks()
-                await asyncio.sleep(15)
+                await asyncio.sleep(60)
         except asyncio.CancelledError as e:
             pass
 
