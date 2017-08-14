@@ -93,6 +93,7 @@ class Tasks:
                                             'description': stream['channel']['status'],
                                             'url': twitch.url,
                                             'colour': discord.Colour.dark_purple(),
+                                            'timestamp': timestamp,
                                         }
                                         embed = discord.Embed(**embed_args)
                                         embed.set_thumbnail(url=stream['channel']['logo'])
@@ -100,7 +101,7 @@ class Tasks:
                                         # embed.add_field(name="Game", value=stream['game'], inline=True)
                                         embed.add_field(name="Stream", value=twitch.url, inline=True)
                                         # embed.set_image(url=stream['preview']['medium'])
-                                        embed.set_footer(text=log.message_token)
+                                        embed.set_footer(text="Stream start time")
                                         await channel.send("{}".format(message), embed=embed)
                                 elif notification.content_type == twitter_content_type:
                                     twitter = communicate.Twitter(log=log, uid=notification.object_id)
