@@ -63,7 +63,6 @@ class LiveBot:
                     except:
                         pass
                     try:
-                        await wait_message.delete()
                         await response_message.delete()
                     except:
                         pass
@@ -78,7 +77,7 @@ class LiveBot:
                     wait_message_embed.set_thumbnail(url=result['logo'])
                     wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
                     wait_message_embed.set_footer(text="Please type YES or NO")
-                    wait_message = await ctx.send("{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
+                    await wait_message.edit(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
                     response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
 
                     if response_message.content.lower() == "no":
@@ -92,7 +91,6 @@ class LiveBot:
                         pass
 
                     try:
-                        await wait_message.delete()
                         await response_message.delete()
                     except:
                         pass
@@ -106,7 +104,7 @@ class LiveBot:
                     }
                     wait_message_embed = discord.Embed(**wait_message_args)
                     wait_message_embed.set_footer(text="Please type YES or NO")
-                    wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
+                    await wait_message.edit(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
                     response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
 
                     if response_message.content.lower() == "no":
@@ -119,7 +117,6 @@ class LiveBot:
                         char_count += len("@everyone ")
 
                     try:
-                        await wait_message.delete()
                         await response_message.delete()
                     except:
                         pass
@@ -135,7 +132,7 @@ class LiveBot:
                     wait_message_embed = discord.Embed(**wait_message_args)
                     wait_message_embed.add_field(name="Parameters", value=parameters_message, inline=True)
                     wait_message_embed.set_footer(text="Default: {name} is live and is playing {game}! {url}")
-                    wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
+                    await wait_message.edit(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
                     response_message = await self.bot.wait_for('message', check=author_check, timeout=120.0)
 
                     if response_message.content.lower() == "default":
@@ -147,7 +144,6 @@ class LiveBot:
                         message_for_notification = response_message.clean_content
 
                     try:
-                        await wait_message.delete()
                         await response_message.delete()
                     except:
                         pass
@@ -159,7 +155,7 @@ class LiveBot:
                     }
                     wait_message_embed = discord.Embed(**wait_message_args)
                     wait_message_embed.set_footer(text="Please mention them with the # prefix")
-                    wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
+                    await wait_message.edit(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
                     response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
 
                     if (response_message.channel_mentions) == 0:
@@ -188,9 +184,13 @@ class LiveBot:
                                     "twitch": twitch_channel,
                                     "content_type": DiscordChannel.get_content_type(),
                                     "object_id": discord_channel.id,
-                                    "message": "{}{}".format("@everyone " if mention_everyone else "", message_for_notification)
                                 }
-                                TwitchNotification.objects.get_or_create(**notification_args)
+                                twitch_notification = TwitchNotification.objects.get_or_create(**notification_args)[0]
+                                try:
+                                    twitch_notification.message = "{}{}".format("@everyone " if mention_everyone else "", message_for_notification)
+                                    twitch_notification.save()
+                                except:
+                                    pass
                                 added_channels.append(discord_channel)
                             except:
                                 continue
@@ -210,7 +210,6 @@ class LiveBot:
 
                 else:
                     try:
-                        await wait_message.delete()
                         await response_message.delete()
                     except:
                         pass
