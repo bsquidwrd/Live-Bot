@@ -154,7 +154,7 @@ class LiveBot:
                         'colour': discord.Colour.dark_purple(),
                     }
                     wait_message_embed = discord.Embed(**wait_message_args)
-                    wait_message_embed.set_footer(text="Please mention them with the # prefix")
+                    wait_message_embed.set_footer(text="Please mention the channel(s) with the # prefix")
                     await wait_message.edit(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
                     response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
 
@@ -206,6 +206,9 @@ class LiveBot:
                         embed.add_field(name="Notify everyone?", value=str(mention_everyone), inline=True)
                         embed.add_field(name="Message", value=message_for_notification, inline=True)
                         embed.add_field(name="Channels", value=added_channels_message, inline=False)
+                        app_info = await self.bot.application_info()
+                        avatar = app_info.owner.default_avatar_url if not app_info.owner.avatar else app_info.owner.avatar_url
+                        embed.set_footer(text = "Developer/Owner: {0.name}#{0.discriminator} (Shard ID: {1})".format(app_info.owner, ctx.guild.shard_id), icon_url = avatar)
                         await ctx.send("{0.author.mention}".format(ctx), embed=embed, delete_after=60.0)
 
                 else:
