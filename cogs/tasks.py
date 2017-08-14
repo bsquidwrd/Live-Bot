@@ -59,7 +59,12 @@ class Tasks:
             if not result.ok:
                 return
 
-            for stream in result.json()['streams']:
+            result_json = result.json()
+            if result_json["_total"] == 0:
+                # No streams live right now, continue on
+                return
+
+            for stream in result_json['streams']:
                 if stream is not None:
                     if stream['stream_type'] == 'live':
                         twitch = TwitchChannel.objects.get(id=stream['channel']['_id'])
