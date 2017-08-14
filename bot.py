@@ -33,7 +33,7 @@ initial_extensions = (
     'cogs.signals',
     'cogs.stats',
     'cogs.meta',
-    # 'cogs.livebot',
+    'cogs.livebot',
 )
 
 def _prefix_callable(bot, msg):
