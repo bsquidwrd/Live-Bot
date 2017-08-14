@@ -27,6 +27,10 @@ class LiveBot:
 
     @commands.group(name="monitor")
     async def monitor_command(self, ctx):
+        """
+        The base command to all the functions I perform.
+        See the help page for this command to learn more.
+        """
         pass
 
     @monitor_command.command(name="add")
