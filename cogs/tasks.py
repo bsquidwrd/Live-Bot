@@ -98,7 +98,6 @@ class Tasks:
                                         embed = discord.Embed(**embed_args)
                                         embed.set_thumbnail(url=stream['channel']['logo'])
                                         embed.add_field(name="Game", value=stream['game'], inline=True)
-                                        # embed.add_field(name="Game", value=stream['game'], inline=True)
                                         embed.add_field(name="Stream", value=twitch.url, inline=True)
                                         # embed.set_image(url=stream['preview']['medium'])
                                         embed.set_footer(text="Stream start time")
