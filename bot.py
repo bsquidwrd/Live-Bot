@@ -38,7 +38,7 @@ initial_extensions = (
 
 def _prefix_callable(bot, msg):
     user_id = bot.user.id
-    base = [f'<@!{user_id}> ', f'<@{user_id}> ', '?livebot ', '!livebot ']
+    base = [f'<@!{user_id}> ', f'<@{user_id}> ']
     return base
 
 class LiveBot(commands.AutoShardedBot):
@@ -52,6 +52,7 @@ class LiveBot(commands.AutoShardedBot):
         self.bots_key = os.environ.get('LIVE_BOT_DBOTS_KEY', None)
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.github_url = github_url
+        self.debug_mode = debug_mode
 
         self.add_command(self.do)
 
@@ -77,7 +78,7 @@ class LiveBot(commands.AutoShardedBot):
             self.uptime = datetime.datetime.utcnow()
 
         print(f'Ready: {self.user} (ID: {self.user.id})')
-        live_bot_game = discord.Game(name='!livebot help', url=github_url, type=0)
+        live_bot_game = discord.Game(name='@me help', url=github_url, type=0)
         await bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
     async def on_resumed(self):
