@@ -79,7 +79,8 @@ class Meta:
             location = os.path.relpath(src.co_filename).replace('\\', '/')
         else:
             location = obj.callback.__module__.replace('.', '/') + '.py'
-            source_url = 'https://github.com/Rapptz/discord.py'
+            location = location.replace(os.environ['LIVE_BOT_BASE_DIR'], "")
+            source_url = 'https://github.com/bsquidwrd/Live-Bot'
 
         final_url = f'<{source_url}/blob/master/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
         await ctx.send(final_url)
