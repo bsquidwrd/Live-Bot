@@ -49,7 +49,8 @@ class Signals:
         c.delete()
 
     async def on_guild_channel_update(self, before, after):
-        c = self.get_channel(after)
+        g = self.get_guild(after.guild)
+        c = self.get_channel(g, after)
 
     def populate_info(self):
         """ Populate all users and guilds """
