@@ -8,6 +8,7 @@ import asyncio
 import copy
 import unicodedata
 import inspect
+import requests
 
 class Prefix(commands.Converter):
     async def convert(self, ctx, argument):
@@ -90,6 +91,29 @@ class Meta:
         """Restarts the bot"""
         await ctx.send(':wave:')
         await self.bot.logout()
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def change_avatar(self, ctx, *, url : str):
+        """
+        Update the bot Avatar
+        ToDo: Let owner update Avatar
+        """
+        try:
+            path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
+            r = requests.get(url)
+            if r.status_code == requests.codes.ok:
+                with open(path, 'wb') as f:
+                    for chunk in r.iter_content(1024):
+                        f.write(chunk)
+                with open(path, 'rb') as f:
+                    await self.bot.user.edit(avatar=f.read())
+                    await ctx.send("{0.author.mention}: Avatar updated successfully!".format(ctx))
+            else:
+                raise Exception("Response code was not ok. Got {0.status_code}".format(r))
+        except Exception as e:
+            response_message = await ctx.send("{0.author.mention} Avatar could not be updated! The server returned status code {1.status_code}".format(ctx, r))
+            print(e)
 
 
 def setup(bot):
