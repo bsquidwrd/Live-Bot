@@ -99,10 +99,10 @@ class Meta:
         Update the bot Avatar
         ToDo: Let owner update Avatar
         """
+        path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
         try:
-            path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
             r = requests.get(url)
-            if r.status_code == requests.codes.ok:
+            if r.status_code == 200:
                 with open(path, 'wb') as f:
                     for chunk in r.iter_content(1024):
                         f.write(chunk)
@@ -114,6 +114,11 @@ class Meta:
         except Exception as e:
             response_message = await ctx.send("{0.author.mention} Avatar could not be updated! The server returned status code {1.status_code}".format(ctx, r))
             print(e)
+        finally:
+            try:
+                os.remove(path)
+            except:
+                pass
 
 
 def setup(bot):
