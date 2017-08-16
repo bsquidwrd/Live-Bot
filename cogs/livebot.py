@@ -9,6 +9,8 @@ from livebot.models import *
 from allauth.socialaccount.models import SocialApp
 from livebot.utils import logify_dict, logify_exception_info
 
+QUESTION_TIMEOUT = 120.0
+
 class UserCancelled(Exception):
     pass
 
@@ -50,7 +52,7 @@ class LiveBot:
             wait_message_embed = discord.Embed(**wait_message_args)
             wait_message_embed.set_footer(text="Example: bsquidwrd")
             wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
-            response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
             twitch_app = SocialApp.objects.get_current('twitch')
             headers = {
@@ -83,7 +85,7 @@ class LiveBot:
                 wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
                 wait_message_embed.set_footer(text="Please type YES or NO")
                 wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
+                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
                 if response_message.content.lower() == "no":
                     await ctx.send("{0.author.mention}: Looks like I couldn't find what you're looking for.\nPlease run the command again once you are sure the name is right".format(ctx), delete_after=30.0)
@@ -111,7 +113,7 @@ class LiveBot:
                 wait_message_embed = discord.Embed(**wait_message_args)
                 wait_message_embed.set_footer(text="Please type YES or NO")
                 wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
+                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
                 if response_message.content.lower() == "no":
                     mention_everyone = False
@@ -140,7 +142,7 @@ class LiveBot:
                 wait_message_embed.add_field(name="Parameters", value=parameters_message, inline=True)
                 wait_message_embed.set_footer(text="Default: {name} is live and is playing {game}! {url}")
                 wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=120.0)
+                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
                 if response_message.content.lower() == "default":
                     message_for_notification = "{name} is live and is playing {game}! {url}"
@@ -164,7 +166,7 @@ class LiveBot:
                 wait_message_embed = discord.Embed(**wait_message_args)
                 wait_message_embed.set_footer(text="Please mention the channel(s) with the # prefix")
                 wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
+                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
                 if (response_message.channel_mentions) == 0:
                     await ctx.send("{0.author.mention}: Looks like you didn't mention any channels to be notified. Please run the command again.".format(ctx), delete_after=30.0)
@@ -268,7 +270,7 @@ class LiveBot:
             wait_message_embed.add_field(name="Channels", value=", ".join([tn.twitch.name for tn in twitch_notifications]), inline=False)
             wait_message_embed.set_footer(text="Example: bsquidwrd")
             wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
-            response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
             try:
                 await wait_message.delete()
@@ -296,7 +298,7 @@ class LiveBot:
                 wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
                 wait_message_embed.set_footer(text="Please type YES or NO")
                 wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
+                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
                 if response_message.content.lower() == "no":
                     await ctx.send("{0.author.mention}: Looks like I couldn't find what you're looking for.\nPlease run the command again once you are sure the name is right".format(ctx), delete_after=30.0)
@@ -337,7 +339,7 @@ class LiveBot:
             wait_message_embed.add_field(name="Channels", value=", ".join([tn.content_object.name for tn in twitch_notifications]))
             wait_message_embed.set_footer(text="Please mention the channel(s) with the # prefix or type all to remove all of them")
             wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
-            response_message = await self.bot.wait_for('message', check=author_check, timeout=60.0)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
             if response_message.clean_content.lower() == "all":
                 notifications_to_delete = twitch_notifications
