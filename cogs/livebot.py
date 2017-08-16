@@ -389,8 +389,8 @@ class LiveBot:
 
         try:
             await ctx.message.delete()
-            await response_message.delete()
             await wait_message.delete()
+            await response_message.delete()
         except:
             pass
 
