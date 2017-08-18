@@ -28,6 +28,10 @@ class Meta:
         if isinstance(error, commands.BadArgument):
             await ctx.send(error)
 
+    async def on_ready(self):
+        live_bot_game = discord.Game(name='@me help', url=self.github_url, type=0)
+        await self.bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
+
     @commands.command(name='help')
     async def _help(self, ctx, *, command: str = None):
         """Shows help about a command or the bot"""

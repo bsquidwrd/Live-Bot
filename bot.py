@@ -81,8 +81,6 @@ class LiveBot(commands.AutoShardedBot):
             self.uptime = datetime.datetime.utcnow()
 
         print(f'Ready: {self.user} (ID: {self.user.id})')
-        live_bot_game = discord.Game(name='@me help', url=self.github_url, type=1)
-        await bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
     async def on_resumed(self):
         print('resumed...')
