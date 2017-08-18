@@ -66,31 +66,26 @@ class Signals:
         """
         Returns a :class:`gaming.models.DiscordChannel` object after getting or creating the Channel
         """
-        if type(channel) == discord.channel.TextChannel:
-            c, created = DiscordChannel.objects.get_or_create(id=channel.id, guild=guild)
-            try:
-                c.name = channel.name
-                c.save()
-            except Exception as e:
-                Log.objects.create(message="Error trying to get Channel {} object for guild {}.\n{}\n{}".format(c, c.guild, logify_exception_info(), e))
+        c, created = DiscordChannel.objects.get_or_create(id=channel.id, guild=guild)
+        try:
+            c.name = channel.name
+            c.save()
+        except Exception as e:
+            Log.objects.create(message="Error trying to get Channel {} object for guild {}.\n{}\n{}".format(c, c.guild, logify_exception_info(), e))
+        finally:
             return c
-        else:
-            return False
 
     def get_guild(self, guild):
         """
         Returns a :class:`gaming.models.DiscordGuild` object after getting or creating the guild
         """
-        error = False
         g, created = DiscordGuild.objects.get_or_create(id=guild.id)
         try:
             g.name = guild.name
             g.save()
         except Exception as e:
-            error = True
             Log.objects.create(message="Error trying to get DiscordGuild object for guild {}.\n{}\n{}".format(g, logify_exception_info(), e))
         finally:
-            g.save()
             return g
 
     async def on_ready(self):
