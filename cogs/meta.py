@@ -28,7 +28,9 @@ class Meta:
         if isinstance(error, commands.BadArgument):
             await ctx.send(error)
 
-    async def on_ready(self):
+    async def update_presence(self):
+        while not self.bot.is_ready():
+            await asyncio.sleep(1)
         live_bot_game = discord.Game(name='@me help', url=self.bot.github_url, type=0)
         await self.bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
@@ -126,4 +128,6 @@ class Meta:
 
 
 def setup(bot):
-    bot.add_cog(Meta(bot))
+    m = Meta(bot)
+    bot.add_cog(m)
+    m.bot.loop.create_task(m.update_presence())
