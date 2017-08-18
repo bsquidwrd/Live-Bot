@@ -29,7 +29,7 @@ class Meta:
             await ctx.send(error)
 
     async def on_ready(self):
-        live_bot_game = discord.Game(name='@me help', url=self.github_url, type=0)
+        live_bot_game = discord.Game(name='@me help', url=self.bot.github_url, type=0)
         await self.bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
     @commands.command(name='help')
