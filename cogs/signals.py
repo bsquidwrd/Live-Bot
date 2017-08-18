@@ -66,6 +66,8 @@ class Signals:
         """
         Returns a :class:`gaming.models.DiscordChannel` object after getting or creating the Channel
         """
+        if type(channel) != discord.channel.TextChannel:
+            return
         c, created = DiscordChannel.objects.get_or_create(id=channel.id, guild=guild)
         try:
             c.name = channel.name
