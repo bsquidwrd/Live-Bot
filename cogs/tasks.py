@@ -96,17 +96,19 @@ class Tasks:
                 if channel is None:
                     raise Exception("Bot returned None for Channel ID {}\n".format(notification.object_id))
                 else:
+                    app_info = await self.bot.application_info()
                     embed_args = {
-                        'title': stream['channel']['display_name'],
+                        # 'title': stream['channel']['display_name'],
                         'description': stream['channel']['status'],
                         'url': twitch.url,
                         'colour': discord.Colour.dark_purple(),
                         'timestamp': timestamp,
                     }
                     embed = discord.Embed(**embed_args)
+                    embed.set_author(name=stream['channel']['display_name'], icon_url=stream['channel']['logo'])
                     embed.set_thumbnail(url=stream['channel']['logo'])
                     embed.add_field(name="Game", value=stream['game'], inline=True)
-                    embed.add_field(name="Stream", value=twitch.url, inline=True)
+                    embed.add_field(name="Stream URL", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])
                     embed.set_footer(text="Stream start time")
                     if not live_notification.success:
