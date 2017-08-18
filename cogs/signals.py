@@ -73,7 +73,7 @@ class Signals:
                 c.save()
             except Exception as e:
                 Log.objects.create(message="Error trying to get Channel {} object for guild {}.\n{}\n{}".format(c, c.guild, logify_exception_info(), e))
-                return c
+            return c
         else:
             return False
 
@@ -100,4 +100,7 @@ class Signals:
         self.populate_info()
 
 def setup(bot):
-    bot.add_cog(Signals(bot))
+    s = Signals(bot)
+    bot.add_cog(s)
+    if bot.is_ready():
+        s.populate_info()
