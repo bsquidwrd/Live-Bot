@@ -33,6 +33,7 @@ class DiscordGuild(models.Model):
     class Meta:
         verbose_name = 'Discord Guild'
         verbose_name_plural = 'Discord Guilds'
+        ordering = ['name']
 
 
 class DiscordChannel(models.Model):
@@ -50,6 +51,7 @@ class DiscordChannel(models.Model):
     class Meta:
         verbose_name = 'Discord Channel'
         verbose_name_plural = 'Discord Channels'
+        ordering = ['guild__name', 'name']
 
 
 class Twitter(models.Model):
@@ -66,6 +68,7 @@ class Twitter(models.Model):
     class Meta:
         verbose_name = 'Twitter Account'
         verbose_name_plural = 'Twitter Accounts'
+        ordering = ['name']
 
 
 class TwitchNotification(models.Model):
@@ -128,6 +131,7 @@ class TwitchLive(models.Model):
     class Meta:
         verbose_name = 'Twitch Live'
         verbose_name_plural = 'Twitch Live Instances'
+        ordering = ['-timestamp', 'twitch__name']
 
 
 class Notification(models.Model):
@@ -157,6 +161,7 @@ class Notification(models.Model):
     class Meta:
         verbose_name = 'Notification'
         verbose_name_plural = 'Notifications'
+        ordering = ['-live__timestamp']
 
 
 class Log(models.Model):
@@ -173,6 +178,11 @@ class Log(models.Model):
     def save(self, *args, **kwargs):
         self.generate_log_token(save=False)
         super().save(*args, **kwargs)
+
+    @property
+    def short_message(self):
+        from django.template.defaultfilters import truncatechars
+        return truncatechars(self.message, 100)
 
     def generate_log_token(self, save=True):
         try:
@@ -201,6 +211,7 @@ class Log(models.Model):
     class Meta:
         verbose_name = 'Log'
         verbose_name_plural = 'Logs'
+        ordering = ['-timestamp']
 
 
 def random_key(length=50):

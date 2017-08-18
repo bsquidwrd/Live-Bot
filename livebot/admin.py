@@ -1,33 +1,26 @@
 from django.contrib import admin
 from .models import *
 
-
-@admin.register(TwitchChannel)
-class TwitchChannelAdmin(admin.ModelAdmin):
+class GlobalAdmin(admin.ModelAdmin):
     def get_display_name(self, obj):
         return str(obj)
-
     get_display_name.short_description = 'Display Name'
+
+
+@admin.register(TwitchChannel)
+class TwitchChannelAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'id')
     search_fields = ['name', 'id']
 
 
 @admin.register(DiscordGuild)
-class DiscordGuildAdmin(admin.ModelAdmin):
-    def get_display_name(self, obj):
-        return str(obj)
-
-    get_display_name.short_description = 'Display Name'
+class DiscordGuildAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'id')
     search_fields = ['name', 'id']
 
 
 @admin.register(DiscordChannel)
-class DiscordChannelAdmin(admin.ModelAdmin):
-    def get_display_name(self, obj):
-        return str(obj)
-
-    get_display_name.short_description = 'Display Name'
+class DiscordChannelAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'id', 'guild')
     search_fields = ['name', 'id', 'guild__id']
     list_filter = (
@@ -36,22 +29,13 @@ class DiscordChannelAdmin(admin.ModelAdmin):
 
 
 @admin.register(Twitter)
-class TwitterAdmin(admin.ModelAdmin):
-    def get_display_name(self, obj):
-        return str(obj)
-
-    get_display_name.short_description = 'Display Name'
+class TwitterAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'name', 'id')
     search_fields = ['name', 'id']
 
 
 @admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    def get_display_name(self, obj):
-        return str(obj)
-
-    get_display_name.short_description = 'Display Name'
-
+class NotificationAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'content_type', 'content_object', 'success')
     search_fields = ['live__twitch__id', 'live__twitch__name', 'object_id']
     list_filter = (
@@ -60,12 +44,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(TwitchNotification)
-class TwitchNotificationAdmin(admin.ModelAdmin):
-    def get_display_name(self, obj):
-        return str(obj)
-
-    get_display_name.short_description = 'Display Name'
-
+class TwitchNotificationAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'content_type', 'content_object')
     search_fields = ['twitch__id', 'twitch__name', 'object_id']
     list_filter = (
@@ -74,16 +53,21 @@ class TwitchNotificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(TwitchLive)
-class TwitchLiveAdmin(admin.ModelAdmin):
-    def get_display_name(self, obj):
-        return str(obj)
-
-    get_display_name.short_description = 'Display Name'
-
+class TwitchLiveAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'timestamp')
     search_fields = ['twitch__id', 'twitch__name',]
     date_hierarchy = 'timestamp'
     ordering = ['-timestamp']
 
 
-admin.site.register(Log)
+@admin.register(Log)
+class LogAdmin(GlobalAdmin):
+    date_hierarchy = 'timestamp'
+    list_display = ('get_display_name', 'timestamp', 'message_token', 'short_message')
+    list_display_links = ('get_display_name',)
+    search_fields = ['message_token', 'message']
+    ordering = ['-timestamp']
+    fieldsets = [
+        (None, {'fields': ['timestamp', 'message_token', 'email', 'subject', 'body', 'message']}),
+    ]
+    readonly_fields = ('timestamp', 'message_token',)
