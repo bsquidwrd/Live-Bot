@@ -90,7 +90,7 @@ class Tasks:
             timestamp = parse(stream['created_at'])
             log = live_notification.log
             message = notification.get_message(name=stream['channel']['display_name'], game=stream['game'])
-            
+
             if notification.content_type == discord_content_type:
                 channel = self.bot.get_channel(int(notification.object_id))
                 if channel is None:
@@ -109,11 +109,13 @@ class Tasks:
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])
                     embed.set_footer(text="Stream start time")
-                    await channel.send("{}".format(message), embed=embed)
+                    if not live_notification.success:
+                        await channel.send("{}".format(message), embed=embed)
 
             elif notification.content_type == twitter_content_type:
                 twitter = communicate.Twitter(log=log, uid=notification.object_id)
-                twitter.tweet('{} {}'.format(message[:115], twitch.url))
+                if not live_notification.success:
+                    twitter.tweet('{} {}'.format(message[:115], twitch.url))
             log.message += "Notification success"
             live_notification.success = True
             live_notification.save()
