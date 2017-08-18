@@ -105,7 +105,8 @@ class Tasks:
                         'timestamp': timestamp,
                     }
                     embed = discord.Embed(**embed_args)
-                    embed.set_author(name=stream['channel']['display_name'], icon_url=stream['channel']['logo'])
+                    app_info = await self.bot.application_info()
+                    embed.set_author(name=stream['channel']['display_name'], icon_url=app_info.icon_url)
                     embed.set_thumbnail(url=stream['channel']['logo'])
                     embed.add_field(name="Game", value=stream['game'], inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
