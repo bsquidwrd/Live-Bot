@@ -26,6 +26,9 @@ Hello! I am a bot written by bsquidwrd with a backbone from Danny.
 """
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+log.addHandler(handler)
 
 initial_extensions = (
     'cogs.admin',
@@ -78,7 +81,7 @@ class LiveBot(commands.AutoShardedBot):
             self.uptime = datetime.datetime.utcnow()
 
         print(f'Ready: {self.user} (ID: {self.user.id})')
-        live_bot_game = discord.Game(name='@me help', url=github_url, type=0)
+        live_bot_game = discord.Game(name='@me help', url=self.github_url, type=1)
         await bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
     async def on_resumed(self):
@@ -96,8 +99,8 @@ class LiveBot(commands.AutoShardedBot):
         else:
             destination = '#{0.channel.name} ({0.guild.name})'.format(message)
         log_message = '{0.created_at}: {0.author.name} in {1}: {0.content}'.format(message, destination)
-        print(log_message)
         log.info(log_message)
+        # print(log_message)
 
         await self.invoke(ctx)
 
@@ -127,3 +130,7 @@ class LiveBot(commands.AutoShardedBot):
 if __name__ == '__main__':
     bot = LiveBot()
     bot.run()
+    handlers = log.handlers[:]
+    for hdlr in handlers:
+        hdlr.close()
+        log.removeHandler(hdlr)
