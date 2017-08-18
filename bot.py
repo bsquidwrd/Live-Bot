@@ -98,9 +98,8 @@ class LiveBot(commands.AutoShardedBot):
             destination = 'Private Message'
         else:
             destination = '#{0.channel.name} ({0.guild.name})'.format(message)
-        log_message = '{0.created_at}: {0.author.name} in {1}: {0.content}'.format(message, destination)
+        log_message = '{0.created_at}: {0.author.name} in {1}: {2}'.format(message, destination, ' '.join(message.content.split(' ')[1::]))
         log.info(log_message)
-        # print(log_message)
 
         await self.invoke(ctx)
 
