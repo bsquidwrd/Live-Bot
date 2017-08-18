@@ -44,9 +44,10 @@ class Signals:
     async def on_guild_channel_delete(self, channel):
         g = self.get_guild(channel.guild)
         c = self.get_channel(g, channel)
-        TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id=c.id).delete()
-        Notification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id=c.id).delete()
-        c.delete()
+        if c:
+            TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id=c.id).delete()
+            Notification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id=c.id).delete()
+            c.delete()
 
     async def on_guild_channel_update(self, before, after):
         g = self.get_guild(after.guild)
