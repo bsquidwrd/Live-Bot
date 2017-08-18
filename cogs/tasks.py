@@ -45,8 +45,6 @@ class Tasks:
     async def run_scheduled_tasks(self):
         try:
             result = None
-            discord_content_type = DiscordChannel.get_content_type()
-            twitter_content_type = Twitter.get_content_type()
             twitch_channels = TwitchChannel.objects.annotate(Count('twitchnotification')).filter(twitchnotification__count__gte=1)
 
             headers = {
@@ -79,44 +77,52 @@ class Tasks:
                                 live_notification = Notification.objects.create(live=live, content_type=notification.content_type, object_id=notification.object_id, success=False, log=log)
                             else:
                                 live_notification = live_notifications.filter(success=False)[0]
-                                log = live_notification.log
-                            try:
-                                message = notification.get_message(name=stream['channel']['display_name'], game=stream['game'])
-                                if notification.content_type == discord_content_type:
-                                    channel = self.bot.get_channel(int(notification.content_object.id))
-                                    if channel is None:
-                                        raise Exception("Bot returned None for Channel ID {}\n".format(notification.content_object.id))
-                                    else:
-                                        app_info = await self.bot.application_info()
-                                        embed_args = {
-                                            'title': stream['channel']['display_name'],
-                                            'description': stream['channel']['status'],
-                                            'url': twitch.url,
-                                            'colour': discord.Colour.dark_purple(),
-                                            'timestamp': timestamp,
-                                        }
-                                        embed = discord.Embed(**embed_args)
-                                        embed.set_thumbnail(url=stream['channel']['logo'])
-                                        embed.add_field(name="Game", value=stream['game'], inline=True)
-                                        embed.add_field(name="Stream", value=twitch.url, inline=True)
-                                        # embed.set_image(url=stream['preview']['medium'])
-                                        embed.set_footer(text="Stream start time")
-                                        await channel.send("{}".format(message), embed=embed)
-                                elif notification.content_type == twitter_content_type:
-                                    twitter = communicate.Twitter(log=log, uid=notification.object_id)
-                                    twitter.tweet('{} {}'.format(message[:115], twitch.url))
-                                log.message += "Notification success"
-                                live_notification.success = True
-                                live_notification.save()
-                            except Exception as e:
-                                log.message += "Error notifying service:\n{}\n{}".format(logify_exception_info(), e)
-                            finally:
-                                log.message += "\n\n"
-                                log.save()
-
+                            self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
             print("{}\n{}\n{}".format(logify_exception_info(), e, result))
             pass
+
+    async def alert(self, stream, notification, live_notification):
+        discord_content_type = DiscordChannel.get_content_type()
+        twitter_content_type = Twitter.get_content_type()
+        try:
+            twitch = notification.twitch
+            timestamp = parse(stream['created_at'])
+            log = live_notification.log
+            message = notification.get_message(name=stream['channel']['display_name'], game=stream['game'])
+            
+            if notification.content_type == discord_content_type:
+                channel = self.bot.get_channel(int(notification.object_id))
+                if channel is None:
+                    raise Exception("Bot returned None for Channel ID {}\n".format(notification.object_id))
+                else:
+                    embed_args = {
+                        'title': stream['channel']['display_name'],
+                        'description': stream['channel']['status'],
+                        'url': twitch.url,
+                        'colour': discord.Colour.dark_purple(),
+                        'timestamp': timestamp,
+                    }
+                    embed = discord.Embed(**embed_args)
+                    embed.set_thumbnail(url=stream['channel']['logo'])
+                    embed.add_field(name="Game", value=stream['game'], inline=True)
+                    embed.add_field(name="Stream", value=twitch.url, inline=True)
+                    # embed.set_image(url=stream['preview']['medium'])
+                    embed.set_footer(text="Stream start time")
+                    await channel.send("{}".format(message), embed=embed)
+
+            elif notification.content_type == twitter_content_type:
+                twitter = communicate.Twitter(log=log, uid=notification.object_id)
+                twitter.tweet('{} {}'.format(message[:115], twitch.url))
+            log.message += "Notification success"
+            live_notification.success = True
+            live_notification.save()
+
+        except Exception as e:
+            log.message += "Error notifying service:\n{}\n{}".format(logify_exception_info(), e)
+        finally:
+            log.message += "\n\n"
+            log.save()
 
 
 def setup(bot):
