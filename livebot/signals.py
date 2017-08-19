@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from allauth.socialaccount.signals import social_account_added, social_account_removed
+from allauth.socialaccount.signals import *
 from allauth.socialaccount.models import SocialAccount
 
 from .models import *
@@ -43,6 +43,19 @@ def email_log(sender, instance, *args, **kwargs):
 
 @receiver(social_account_added)
 def create_twitter_account(sender, request, sociallogin, *args, **kwargs):
+    social_account = sociallogin.account
+    if social_account.provider == 'twitter':
+        t = Twitter.objects.get_or_create(id=social_account.uid)[0]
+        try:
+            t.name = social_account.extra_data['name']
+            t.save()
+        except:
+            # unable to set/get display name for twitter account
+            pass
+
+
+@receiver(social_account_updated)
+def update_twitter_account(sender, request, sociallogin, *args, **kwargs):
     social_account = sociallogin.account
     if social_account.provider == 'twitter':
         t = Twitter.objects.get_or_create(id=social_account.uid)[0]
