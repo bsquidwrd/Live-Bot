@@ -23,6 +23,11 @@ class Meta:
     def __init__(self, bot):
         self.bot = bot
         bot.remove_command('help')
+        bot.loop.create_task(self.update_presence())
+        self._task = bot.loop.create_task(self.run_tasks())
+
+    def __unload(self):
+        self._task.cancel()
 
     async def __error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
@@ -98,26 +103,32 @@ class Meta:
         await ctx.send(':wave:')
         await self.bot.logout()
 
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def change_avatar(self, ctx, *, url : str):
+    async def run_tasks(self):
+        try:
+            while not self.bot.is_closed():
+                await self.update_avatar()
+                await asyncio.sleep(3600)
+        except asyncio.CancelledError as e:
+            pass
+
+    async def update_avatar(self):
         """
         Update the bot Avatar
         """
         path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
         try:
-            r = requests.get(url)
+            app_info = await self.bot.application_info()
+            r = requests.get(app_info.icon_url)
             if r.status_code == 200:
                 with open(path, 'wb') as f:
                     for chunk in r.iter_content(1024):
                         f.write(chunk)
                 with open(path, 'rb') as f:
                     await self.bot.user.edit(avatar=f.read())
-                    await ctx.send("{0.author.mention}: Avatar updated successfully!".format(ctx))
             else:
                 raise Exception("Response code was not ok. Got {0.status_code}".format(r))
         except Exception as e:
-            response_message = await ctx.send("{0.author.mention} Avatar could not be updated! The server returned status code {1.status_code}".format(ctx, r))
+            Log.objects.create(message="Avatar could not be updated! The server returned status code {0.status_code}\n{1}\n{2}".format(r, logify_exception_info(), e), email=True)
             print(e)
         finally:
             try:
@@ -127,6 +138,4 @@ class Meta:
 
 
 def setup(bot):
-    m = Meta(bot)
-    bot.add_cog(m)
-    m.bot.loop.create_task(m.update_presence())
+    bot.add_cog(Meta(bot))

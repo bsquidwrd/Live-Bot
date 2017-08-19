@@ -27,6 +27,11 @@ class LiveBot:
     async def on_ready(self):
         pass
 
+    async def __error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            # await ctx.send(error)
+            Log.objects.create(message="Error running command: {0.command}\n{1}".format(ctx, error))
+
     @commands.group(name="monitor")
     @checks.is_mod()
     async def monitor_command(self, ctx):

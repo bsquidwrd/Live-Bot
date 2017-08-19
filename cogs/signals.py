@@ -11,6 +11,7 @@ class Signals:
     """
     def __init__(self, bot):
         self.bot = bot
+        bot.loop.create_task(self.populate_info())
 
     async def on_guild_join(self, guild):
         try:
@@ -53,13 +54,24 @@ class Signals:
         g = self.get_guild(after.guild)
         c = self.get_channel(g, after)
 
-    def populate_info(self):
+    async def populate_info(self):
         """ Populate all users and guilds """
+        while not self.bot.is_ready():
+            await asyncio.sleep(1)
         try:
+            deleted_guilds = DiscordGuild.objects.all()
             for guild in self.bot.guilds:
                 g = self.get_guild(guild)
+                deleted_guilds = deleted_guilds.exclude(pk=g.id)
+                deleted_channels = DiscordChannel.objects.filter(guild=g)
                 for channel in guild.channels:
                     c = self.get_channel(g, channel)
+                    deleted_channels = deleted_channels.exclude(id=channel.id)
+
+                TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[dc.id for dc in deleted_channels]).delete()
+                Notification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[dc.id for dc in deleted_channels]).delete()
+                deleted_channels.delete()
+            deleted_guilds.delete()
         except Exception as e:
             print(e)
 
@@ -93,12 +105,9 @@ class Signals:
 
     async def on_ready(self):
         """
-        Bot is loaded, populate information that is needed for everything
+        Bot is loaded
         """
-        self.populate_info()
+        pass
 
 def setup(bot):
-    s = Signals(bot)
-    bot.add_cog(s)
-    if bot.is_ready():
-        s.populate_info()
+    bot.add_cog(Signals(bot))
