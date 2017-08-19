@@ -23,6 +23,7 @@ class DiscordGuildAdmin(GlobalAdmin):
 class DiscordChannelAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'id', 'guild')
     search_fields = ['name', 'id', 'guild__id']
+    raw_id_fields = ('guild',)
     list_filter = (
         ('guild', admin.RelatedOnlyFieldListFilter),
     )
@@ -38,6 +39,7 @@ class TwitterAdmin(GlobalAdmin):
 class NotificationAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'content_type', 'content_object', 'success')
     search_fields = ['live__twitch__id', 'live__twitch__name', 'object_id']
+    raw_id_fields = ('log', 'live',)
     list_filter = (
         ('content_type', admin.RelatedOnlyFieldListFilter),
     )
@@ -47,6 +49,7 @@ class NotificationAdmin(GlobalAdmin):
 class TwitchNotificationAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'content_type', 'content_object')
     search_fields = ['twitch__id', 'twitch__name', 'object_id']
+    raw_id_fields = ('twitch',)
     list_filter = (
         ('content_type', admin.RelatedOnlyFieldListFilter),
     )
