@@ -2,7 +2,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from allauth.socialaccount.signals import social_account_added
+from allauth.socialaccount.signals import social_account_added, social_account_removed
+from allauth.socialaccount.models import SocialAccount
 
 from .models import *
 from .utils import logify_exception_info
@@ -38,3 +39,26 @@ def email_log(sender, instance, *args, **kwargs):
                 )
             except Exception as e:
                 Log.objects.create(message="Error sending email about log {}\n\n{}".format(logify_exception_info()), message_token='ERROR_SENDING_EMAIL')
+
+
+@receiver(social_account_added)
+def create_twitter_account(sender, request, sociallogin, *args, **kwargs):
+    social_account = sociallogin.account
+    if social_account.provider == 'twitter':
+        t = Twitter.objects.get_or_create(id=social_account.uid)[0]
+        try:
+            t.name = social_account.extra_data['name']
+            t.save()
+        except:
+            # unable to set/get display name for twitter account
+            pass
+
+
+@receiver(social_account_removed)
+def delete_twitter_account(sender, request, socialaccount, *args, **kwargs):
+    if socialaccount.provider == 'twitter':
+        t = Twitter.objects.filter(id=socialaccount.uid)
+        if t.count() >= 1:
+            TwitchNotification.objects.filter(content_type=Twitter.get_content_type(), object_id=socialaccount.uid).delete()
+            Notification.objects.filter(content_type=Twitter.get_content_type(), object_id=socialaccount.uid).delete()
+            t.delete()
