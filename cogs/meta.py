@@ -103,7 +103,6 @@ class Meta:
     async def change_avatar(self, ctx, *, url : str):
         """
         Update the bot Avatar
-        ToDo: Let owner update Avatar
         """
         path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
         try:
