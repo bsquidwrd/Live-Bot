@@ -41,6 +41,7 @@ class NotificationAdmin(GlobalAdmin):
     search_fields = ['live__twitch__id', 'live__twitch__name', 'object_id']
     raw_id_fields = ('log', 'live',)
     list_filter = (
+        ('success', admin.BooleanFieldListFilter),
         ('content_type', admin.RelatedOnlyFieldListFilter),
     )
 
@@ -51,6 +52,7 @@ class TwitchNotificationAdmin(GlobalAdmin):
     search_fields = ['twitch__id', 'twitch__name', 'object_id']
     raw_id_fields = ('twitch',)
     list_filter = (
+        ('twitch', admin.RelatedOnlyFieldListFilter),
         ('content_type', admin.RelatedOnlyFieldListFilter),
     )
 

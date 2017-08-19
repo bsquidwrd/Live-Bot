@@ -21,6 +21,7 @@ class TwitchChannel(models.Model):
     class Meta:
         verbose_name = 'Twitch Channel'
         verbose_name_plural = 'Twitch Channels'
+        ordering = ['name']
 
 
 class DiscordGuild(models.Model):
