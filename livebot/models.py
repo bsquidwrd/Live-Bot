@@ -90,7 +90,8 @@ class TwitchNotification(models.Model):
     anything else they want notified when they go live
     """
     twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    limit = models.Q(app_label = 'livebot')
+    content_type = models.ForeignKey(ContentType, limit_choices_to=limit, on_delete=models.CASCADE)
     object_id = models.BigIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     message = models.CharField(max_length=255, verbose_name='Notification Message')
@@ -150,7 +151,8 @@ class Notification(models.Model):
     """
     log = models.ForeignKey('Log', verbose_name='Log Item')
     live = models.ForeignKey(TwitchLive, verbose_name='Twitch Live')
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    limit = models.Q(app_label = 'livebot')
+    content_type = models.ForeignKey(ContentType, limit_choices_to=limit, on_delete=models.CASCADE)
     object_id = models.BigIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     success = models.BooleanField(default=False, verbose_name='Success')
