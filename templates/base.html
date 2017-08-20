@@ -1,0 +1,140 @@
+<!DOCTYPE html>{% load staticfiles %}
+<html lang="en">
+
+<head>
+    <title>{% block head_title %}Home{% endblock %} | Live Bot</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="ROBOTS" context="NOINDEX, NOFOLLOW">
+
+    <link type="text/plain" rel="author" href="{% url 'humans' %}" />
+    <link rel="shortcut icon" href="{% static 'images\favicon.ico' %}" type="image/x-icon" />
+
+    <link href="{% static 'Flat-UI/css/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'Flat-UI/css/flat-ui.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css\style.min.css' %}" />
+
+    <!-- jQuery (necessary for Flat UI's JavaScript plugins) -->
+    <script src="{% static 'Flat-UI/js/vendor/jquery.min.js' %}"></script>
+    <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+    <script src="{% static 'js\konami.min.js' %}"></script>
+    <script src="https://use.fontawesome.com/e92ba6f36d.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% static 'Flat-UI/js/vendor/video.js' %}"></script>
+    <script src="{% static 'Flat-UI/js/application.js' %}"></script>
+    <script src="{% static 'Flat-UI/js/flat-ui.min.js' %}"></script>
+
+    <!-- extra_header -->
+    {% block extra_header %} {% endblock %}
+    <!-- /extra_header -->
+</head>
+
+<body role="document">
+    {% include 'menu.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="hide_for_processing">
+                    <!-- Anything for left sidebar that needs to be hidden when a page is being unloaded -->
+                </div>
+            </div>
+
+            <div class="col-md-8 show_for_processing"><br /><br />
+                <div class="loader">Loading...</div>
+            </div>
+
+            <div class="col-md-8 hide_for_processing">
+                <div class="text-center">
+                    <h5>{% block page_header %}{% endblock %}</h5>
+                    <hr class="header" />
+                </div>
+                <div>
+                    {% block breadcrumbs %}{% endblock %}
+                </div>
+
+                <!-- <div class="show_for_processing"><br /><br />
+                    <div class="loader">Loading...</div>
+                </div> -->
+
+                <div>
+                    {% block messages %}
+                    {% if messages %}
+                    <!-- messages -->
+                    {% for message in messages %}
+                    <div class="alert alert-dismissible{% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <strong>{{ message|safe }}</strong>
+                    </div>
+                    {% endfor %}
+                    <!-- /messages -->
+                    {% endif %}
+                    {% endblock %}
+                    <!-- body -->
+                    {% block body %}
+
+                    <!-- content -->
+                    {% block content %} {% endblock %}
+                    <!-- /content -->
+
+                    {% endblock %}
+                    <!-- /body -->
+
+                    <!-- extra_body -->
+                    {% block extra_body %} {% endblock %}
+                    <!-- /extra_body -->
+                </div>
+                <!-- /hide_for_processing -->
+            </div>
+            <!-- /col-md-6 -->
+            <div class="col-md-2">
+                <div class="hide_for_processing">
+                    <!-- Anything for right sidebar that needs to be hidden when a page is being unloaded -->
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+
+    <noscript id="deferred-styles">
+        <link rel="stylesheet" type="text/css" href="{% static 'css\loader.min.css' %}"/>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.min.css">
+    </noscript>
+
+
+    <script>
+        var loadDeferredStyles = function() {
+            var addStylesNode = document.getElementById("deferred-styles");
+            var replacement = document.createElement("div");
+            replacement.innerHTML = addStylesNode.textContent;
+            document.body.appendChild(replacement)
+            addStylesNode.parentElement.removeChild(addStylesNode);
+        };
+        var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+            webkitRequestAnimationFrame || msRequestAnimationFrame;
+        if (raf) raf(function() {
+            window.setTimeout(loadDeferredStyles, 0);
+        });
+        else window.addEventListener('load', loadDeferredStyles);
+
+        $(window).bind('beforeunload', function() {
+            $(".show_for_processing").show();
+            $(".hide_for_processing").hide();
+        });
+
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip();
+            $(".show_for_processing").hide();
+            $(".hide_for_processing").show();
+            // $(".alert-dismissible").delay(10000).addClass("in").fadeOut(3500);
+        });
+        var easter_egg = new Konami("{% url 'humans' %}");
+    </script>
+
+    <!-- extra_footer -->
+    {% block extra_footer %} {% endblock %}
+    <!-- /extra_footer -->
+</body>
+
+</html>

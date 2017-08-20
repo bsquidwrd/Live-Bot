@@ -1,0 +1,15 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# DESIGNER/IMPLEMENTER/MAGIC MAN
+
+    bsquidwrd
+
+# THANKS
+
+    Isklar, a buddy who advised me on how best to arrange the UI
+
+# TECHNOLOGY COLOPHON
+
+    CSS, HTML, Python, Django, Postgresql,
+    nginx and git

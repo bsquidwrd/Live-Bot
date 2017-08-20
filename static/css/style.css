@@ -1,0 +1,101 @@
+@page {
+    size: A4;
+    margin: 1cm;
+}
+
+body {
+    padding-top: 20px;
+    padding-bottom: 30px;
+    background-color: #f6f6f6;
+}
+
+.header-icon {
+    height: auto;
+    width: 50px;
+}
+
+.body-icon {
+    height: auto;
+    width: 50px;
+}
+
+.processing_message_cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.my-header {
+    text-align: center;
+}
+
+.socialaccount_providers .twitter {
+    background-color: #1da1f2;
+    color: #f1f1f1;
+}
+
+.socialaccount_providers .twitch {
+    background-color: #6441A4;
+    color: #f1f1f1;
+}
+
+.socialaccount_providers .discord {
+    background-color: #7289DA;
+    color: #f1f1f1;
+}
+
+.socialaccount_providers .facebook {
+    background-color: #3b5998;
+    color: #f1f1f1;
+}
+
+.panel-button .panel-heading h3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: normal;
+    width: 75%;
+    padding-top: 8px;
+}
+
+.staff-search-results tr td {
+    width: 1%;
+}
+
+.my-green-button {
+    background-color: #1ABC9C;
+}
+
+.btn-warning {
+    background-color: #f2930e;
+}
+
+
+/* Sticky footer styles
+-------------------------------------------------- */
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 100px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 100px;
+    /*background-color: #f5f5f5;*/
+}
+
+.footer img {
+    width: 25px;
+    height: auto;
+}
+
+
+/* End Sticky footer styles
+-------------------------------------------------- */
