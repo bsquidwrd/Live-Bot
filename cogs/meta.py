@@ -110,6 +110,10 @@ class Meta:
         """
         if ctx.author.id in [self.bot.owner_id, 288146095190573062]:
             await ctx.send("I have given a blowjob to {0.mention}".format(member))
+            try:
+                await ctx.message.delete()
+            except:
+                pass
 
     async def run_tasks(self):
         try:
