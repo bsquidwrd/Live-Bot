@@ -47,7 +47,7 @@ def create_twitter_account(sender, request, sociallogin, *args, **kwargs):
     if social_account.provider == 'twitter':
         t = Twitter.objects.get_or_create(id=social_account.uid)[0]
         try:
-            t.name = social_account.extra_data['name']
+            t.name = social_account.extra_data['screen_name']
             t.save()
         except:
             # unable to set/get display name for twitter account
@@ -60,7 +60,7 @@ def update_twitter_account(sender, request, sociallogin, *args, **kwargs):
     if social_account.provider == 'twitter':
         t = Twitter.objects.get_or_create(id=social_account.uid)[0]
         try:
-            t.name = social_account.extra_data['name']
+            t.name = social_account.extra_data['screen_name']
             t.save()
         except:
             # unable to set/get display name for twitter account
