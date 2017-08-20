@@ -105,6 +105,9 @@ class Meta:
 
     @commands.command(hidden=True)
     async def blowjob(self, ctx, member : discord.Member):
+        """
+        Make me give someone a blowjob (Must be Docter Octopus or Bot owner)
+        """
         if ctx.author.id in [self.bot.owner_id, 288146095190573062]:
             await ctx.send("I have given a blowjob to {0.mention}".format(member))
 
