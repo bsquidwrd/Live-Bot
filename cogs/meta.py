@@ -103,6 +103,11 @@ class Meta:
         await ctx.send(':wave:')
         await self.bot.logout()
 
+    @commands.command(hidden=True)
+    async def blowjob(self, ctx, member : discord.Member):
+        if ctx.author.id in [self.bot.owner_id, 288146095190573062]:
+            await ctx.send("I have given a blowjob to {0.mention}".format(member))
+
     async def run_tasks(self):
         try:
             while not self.bot.is_closed():
