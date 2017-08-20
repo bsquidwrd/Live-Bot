@@ -111,7 +111,7 @@ class Tasks:
                     embed.add_field(name="Game", value=stream['game'], inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])
-                    embed.set_footer(text="Stream start time")
+                    embed.set_footer(text="ID: {} | Stream start time".format(twitch.id))
                     if not live_notification.success:
                         await channel.send("{}".format(message), embed=embed)
 
