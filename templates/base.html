@@ -9,20 +9,23 @@
     <meta name="ROBOTS" context="NOINDEX, NOFOLLOW">
 
     <meta name="creator" content="bsquidwrd" />
-    <meta name="og:image" content="{% static 'images/logo.jpg' %}" />
-    <meta name="og:description" content="Live Bot, a Discord based bot that allows you to notify your Discord Server when you go live on Twitch" />
+    <meta property='og:site_name' content="Live Bot">
+    <meta property='og:title' content="Live Bot">
+    <meta property='og:url' content="http://www.bsquid.io">
+    <meta property='og:description' content="Live Bot, a Discord based bot that allows you to notify your Discord Server when you go live on Twitch"``>
+    <meta property='og:image' content="{% static 'images/logo.jpg' %}">
 
     <link type="text/plain" rel="author" href="{% url 'humans' %}" />
-    <link rel="shortcut icon" href="{% static 'images\favicon.ico' %}" type="image/x-icon" />
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon" />
 
     <link href="{% static 'Flat-UI/css/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'Flat-UI/css/flat-ui.min.css' %}" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{% static 'css\style.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.min.css' %}" />
 
     <!-- jQuery (necessary for Flat UI's JavaScript plugins) -->
     <script src="{% static 'Flat-UI/js/vendor/jquery.min.js' %}"></script>
     <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-    <script src="{% static 'js\konami.min.js' %}"></script>
+    <script src="{% static 'js/konami.min.js' %}"></script>
     <script src="https://use.fontawesome.com/e92ba6f36d.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{% static 'Flat-UI/js/vendor/video.js' %}"></script>
@@ -102,7 +105,7 @@
     <!-- /container -->
 
     <noscript id="deferred-styles">
-        <link rel="stylesheet" type="text/css" href="{% static 'css\loader.min.css' %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/loader.min.css' %}"/>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.min.css">
     </noscript>
 
