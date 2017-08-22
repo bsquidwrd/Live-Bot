@@ -92,7 +92,7 @@ class LiveBot(commands.AutoShardedBot):
             return
 
         destination = None
-        if type(message.channel) == discord.abc.PrivateChannel:
+        if type(message.channel) in [discord.DMChannel, discord.GroupChannel]:
             destination = 'Private Message'
         else:
             destination = '#{0.channel.name} ({0.guild.name})'.format(message)
