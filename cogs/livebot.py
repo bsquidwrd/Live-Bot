@@ -3,6 +3,7 @@ from cogs.utils import checks, logify_exception_info, logify_dict, communicate
 import asyncio
 import discord
 import requests
+import copy
 
 import web.wsgi
 from livebot.models import *
@@ -39,7 +40,10 @@ class LiveBot:
         The base command to all the functions I perform.
         See the help page for this command to learn more.
         """
-        pass
+        if ctx.invoked_subcommand is None:
+            msg = copy.copy(ctx.message)
+            msg.content = "{} help monitor".format(self.bot.user.mention)
+            await self.bot.process_commands(msg)
 
     @monitor_command.command(aliases=["edit"], name="add")
     async def monitor_add_command(self, ctx):
