@@ -86,6 +86,13 @@ class Admin:
         commit_url = member.game.url + '/commit/' + current_commit
         msg = await self.bot.send_message(ctx.message.channel, 'I am currently running on commit `{}`\n\n{}'.format(current_commit, commit_url))
 
+    @commands.command(aliases=['stop'], hidden=True)
+    @commands.is_owner()
+    async def restart(self, ctx):
+        """Restarts the bot"""
+        await ctx.send(':wave:')
+        await self.bot.logout()
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))

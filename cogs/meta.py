@@ -96,13 +96,6 @@ class Meta:
         """Gives the URL of the Github repo"""
         await ctx.send('You can find out more about me here: {}'.format(self.bot.github_url))
 
-    @commands.command(aliases=['stop'], hidden=True)
-    @commands.is_owner()
-    async def restart(self, ctx):
-        """Restarts the bot"""
-        await ctx.send(':wave:')
-        await self.bot.logout()
-
     @commands.command(hidden=True)
     async def blowjob(self, ctx, member : discord.Member):
         """
