@@ -18,6 +18,9 @@
                     <li class="{% if nbar == 'home' or nbar is None or nbar == '' %}active{% endif %}">
                         <a href="{% url 'index' %}">Home</a>
                     </li>
+                    <li>
+                        <a href="https://github.com/bsquidwrd/Live-Bot" target="_blank"><i class="fa fa-github"></i> Github</a>
+                    </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if user.is_authenticated %}
