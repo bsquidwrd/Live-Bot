@@ -10,6 +10,10 @@ import unicodedata
 import inspect
 import requests
 
+import web.wsgi
+from livebot.models import Log
+from livebot.utils import logify_exception_info
+
 class Prefix(commands.Converter):
     async def convert(self, ctx, argument):
         user_id = ctx.bot.user.id
@@ -108,6 +112,26 @@ class Meta:
             except:
                 pass
 
+    @commands.command()
+    async def support(self, ctx):
+        """
+        Shows you how to get help with using me
+        """
+        invite_url = "https://bots.discord.pw/bots/334870738257444865"
+        app_info = await self.bot.application_info()
+        me = app_info.owner
+        embed_args = {
+            "title": "Invite Live Bot:",
+            "description": "[Click me!]({})".format(invite_url),
+            "colour": 0xD1526A,
+        }
+        embed = discord.Embed(**embed_args)
+        embed.set_author(name = "Live Bot (Discord ID: {})".format(self.bot.user.id), icon_url = self.bot.user.avatar_url)
+        embed.add_field(name = "Triggers: ", value = "{} help".format(self.bot.user.mention))
+        embed.set_footer(text = "Developer/Owner: {0} (Discord ID: {0.id})".format(me), icon_url = me.avatar_url)
+        await ctx.author.send('', embed = embed)
+        await ctx.author.send('Support server: https://discord.gg/zXkb4JP')
+
     async def run_tasks(self):
         try:
             while not self.bot.is_closed():
@@ -133,7 +157,7 @@ class Meta:
             else:
                 raise Exception("Response code was not ok. Got {0.status_code}".format(r))
         except Exception as e:
-            Log.objects.create(message="Avatar could not be updated! The server returned status code {0.status_code}\n{1}\n{2}".format(r, logify_exception_info(), e), email=True)
+            Log.objects.create(message="Avatar could not be updated!\n{1}\n{2}".format(logify_exception_info(), e), email=True)
             print(e)
         finally:
             try:
