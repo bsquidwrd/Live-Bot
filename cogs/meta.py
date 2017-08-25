@@ -119,6 +119,7 @@ class Meta:
         embed.set_footer(text = "Developer/Owner: {0} (Discord ID: {0.id})".format(me), icon_url = me.avatar_url)
         await ctx.author.send('', embed = embed)
         await ctx.author.send('Support server: https://discord.gg/zXkb4JP')
+        await ctx.message.delete()
 
     async def run_tasks(self):
         try:
