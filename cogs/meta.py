@@ -146,7 +146,7 @@ class Meta:
             else:
                 raise Exception("Response code was not ok. Got {0.status_code}".format(r))
         except Exception as e:
-            Log.objects.create(message="Avatar could not be updated!\n{1}\n{2}".format(logify_exception_info(), e), email=True)
+            Log.objects.create(message="Avatar could not be updated!\n{1}\n{2}".format(logify_exception_info(), e))
             print(e)
         finally:
             try:
