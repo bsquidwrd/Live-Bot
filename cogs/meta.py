@@ -165,7 +165,7 @@ class Meta:
 
         app_info = await self.bot.application_info()
         embed_args = {
-            # "title": "Live Bot Notification".format(app_info.owner),
+            "title": "Live Bot Notification",
             "description": "{}".format(content),
             "colour": discord.Colour.red(),
             "timestamp": ctx.message.created_at,
@@ -173,7 +173,6 @@ class Meta:
         embed = discord.Embed(**embed_args)
         avatar_url = self.bot.user.default_avatar_url if not self.bot.user.avatar else self.bot.user.avatar_url
         embed.set_author(name=ctx.author, url=self.bot.github_url, icon_url=ctx.author.avatar_url)
-        embed.add_field(name="Support Server", value="[Click Here](https://discord.gg/zXkb4JP)", inline=True)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
         alert_args = {
             "content": f"\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}",
@@ -183,8 +182,11 @@ class Meta:
         wait_message = await ctx.send(content="{0.author.mention}: Does this look good to you?".format(ctx), embed=embed)
         response_message = await self.bot.wait_for('message', check=author_check, timeout=120)
 
-        await wait_message.delete()
-        await response_message.delete()
+        try:
+            await wait_message.delete()
+            await response_message.delete()
+        except Exception as e:
+            pass
 
         if response_message.content.lower() == "no":
             await ctx.send("{0.author.mention}: Please run the command again once you are sure you want to send it".format(ctx), delete_after=30.0)
@@ -195,7 +197,8 @@ class Meta:
             for guild in self.bot.guilds:
                 if not guild.owner in owners_alerted:
                     try:
-                        self.bot.loop.create_task(guild.owner.send(**alert_args))
+                        await guild.owner.send(**alert_args)
+                        await guild.owner.send(content="Support Server: https://discord.gg/zXkb4JP")
                         owners_alerted.append(guild.owner)
                     except Exception as e:
                         pass
