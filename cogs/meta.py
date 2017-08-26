@@ -95,11 +95,6 @@ class Meta:
         final_url = f'<{source_url}/blob/master/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>'
         await ctx.send(final_url)
 
-    @commands.command(name='git')
-    async def give_github_url(self, ctx):
-        """Gives the URL of the Github repo"""
-        await ctx.send('You can find out more about me here: {}'.format(self.bot.github_url))
-
     @commands.command()
     async def support(self, ctx):
         """
@@ -197,8 +192,7 @@ class Meta:
             for guild in self.bot.guilds:
                 if not guild.owner in owners_alerted:
                     try:
-                        await guild.owner.send(**alert_args)
-                        await guild.owner.send(content="Support Server: https://discord.gg/zXkb4JP")
+                        self.bot.loop.create_task(self.alert_owner(owner=guild.owner, **alert_args))
                         owners_alerted.append(guild.owner)
                     except Exception as e:
                         pass
@@ -206,6 +200,10 @@ class Meta:
             channel = self.bot.get_channel(int(os.environ['LIVE_BOT_ALERT_CHANNEL']))
             await channel.send(**alert_args)
         await ctx.message.delete()
+
+    async def alert_owner(self, owner, **kwargs):
+        await owner.send(**kwargs)
+        await owner.send(content="Support Server: https://discord.gg/zXkb4JP")
 
 
 def setup(bot):
