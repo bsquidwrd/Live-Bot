@@ -178,7 +178,7 @@ class Meta:
                 continue
             if not guild.owner in owners_alerted:
                 alert_args = {
-                    "content": "\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}",
+                    "content": f"\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}",
                     "embed": embed,
                 }
                 self.bot.loop.create_task(guild.owner.send(**alert_args))
