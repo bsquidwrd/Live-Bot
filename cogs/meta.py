@@ -160,9 +160,12 @@ class Meta:
         """
         Alerts Guild Owners with a message
         """
+        def author_check(m):
+            return m.author.id == ctx.author.id
+
         app_info = await self.bot.application_info()
         embed_args = {
-            "title": "Live Bot Notification".format(app_info.owner),
+            # "title": "Live Bot Notification".format(app_info.owner),
             "description": "{}".format(content),
             "colour": discord.Colour.red(),
             "timestamp": ctx.message.created_at,
@@ -172,18 +175,34 @@ class Meta:
         embed.set_author(name=ctx.author, url=self.bot.github_url, icon_url=ctx.author.avatar_url)
         embed.add_field(name="Support Server", value="[Click Here](https://discord.gg/zXkb4JP)", inline=True)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
-        owners_alerted = []
-        for guild in self.bot.guilds:
-            if guild.id not in [320309192084684812, 225471771355250688]:
-                continue
-            if not guild.owner in owners_alerted:
-                alert_args = {
-                    "content": f"\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}",
-                    "embed": embed,
-                }
-                self.bot.loop.create_task(guild.owner.send(**alert_args))
-                owners_alerted.append(guild.owner)
-        await ctx.send("\N{OK HAND SIGN} Message has been sent to {} guild owners.".format(len(owners_alerted)))
+        alert_args = {
+            "content": f"\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}",
+            "embed": embed,
+        }
+
+        wait_message = await ctx.send(content="{0.author.mention}: Does this look good to you?".format(ctx), embed=embed)
+        response_message = await self.bot.wait_for('message', check=author_check, timeout=120)
+
+        await wait_message.delete()
+        await response_message.delete()
+
+        if response_message.content.lower() == "no":
+            await ctx.send("{0.author.mention}: Please run the command again once you are sure you want to send it".format(ctx), delete_after=30.0)
+        elif response_message.content.lower() != "yes":
+            await ctx.send("{0.author.mention}: I didn't understand your answer.\nPlease run the command and try again.".format(ctx), delete_after=30.0)
+        else:
+            owners_alerted = []
+            for guild in self.bot.guilds:
+                if not guild.owner in owners_alerted:
+                    try:
+                        self.bot.loop.create_task(guild.owner.send(**alert_args))
+                        owners_alerted.append(guild.owner)
+                    except Exception as e:
+                        pass
+            await ctx.send("\N{OK HAND SIGN} Message has been sent to {} guild owners.".format(len(owners_alerted)))
+            channel = self.bot.get_channel(int(os.environ['LIVE_BOT_ALERT_CHANNEL']))
+            await channel.send(**alert_args)
+        await ctx.message.delete()
 
 
 def setup(bot):
