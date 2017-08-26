@@ -169,7 +169,7 @@ class Meta:
         }
         embed = discord.Embed(**embed_args)
         avatar_url = self.bot.user.default_avatar_url if not self.bot.user.avatar else self.bot.user.avatar_url
-        embed.set_author(name=ctx.author, url=self.bot.github_url, icon_url=avatar_url)
+        embed.set_author(name=ctx.author, url=self.bot.github_url, icon_url=ctx.author.avatar_url)
         embed.add_field(name="Support Server", value="[Click Here](https://discord.gg/zXkb4JP)", inline=True)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
         owners_alerted = []
@@ -178,16 +178,12 @@ class Meta:
                 continue
             if not guild.owner in owners_alerted:
                 alert_args = {
-                    "owner": guild.owner,
-                    "content": f"\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}\n\n```{content}```",
+                    "content": "\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}",
                     "embed": embed,
                 }
-                self.bot.loop.create_task(self.alert_owner(**alert_args))
+                self.bot.loop.create_task(guild.owner.send(**alert_args))
                 owners_alerted.append(guild.owner)
         await ctx.send("\N{OK HAND SIGN} Message has been sent to {} guild owners.".format(len(owners_alerted)))
-
-    async def alert_owner(self, owner, content, embed):
-        await owner.send(content=f"{content}", embed=embed)
 
 
 def setup(bot):
