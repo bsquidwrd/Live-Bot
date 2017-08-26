@@ -170,6 +170,7 @@ class Meta:
         embed = discord.Embed(**embed_args)
         avatar_url = self.bot.user.default_avatar_url if not self.bot.user.avatar else self.bot.user.avatar_url
         embed.set_author(name=ctx.author, url=self.bot.github_url, icon_url=avatar_url)
+        embed.add_field(name="Support Server", value="[Click Here](https://discord.gg/zXkb4JP)", inline=True)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
         owners_alerted = []
         for guild in self.bot.guilds:
@@ -186,7 +187,7 @@ class Meta:
         await ctx.send("\N{OK HAND SIGN} Message has been sent to {} guild owners.".format(len(owners_alerted)))
 
     async def alert_owner(self, owner, content, embed):
-        await owner.send(content=f"{content}\n\nSupport server: https://discord.gg/zXkb4JP", embed=embed)
+        await owner.send(content=f"{content}", embed=embed)
 
 
 def setup(bot):
