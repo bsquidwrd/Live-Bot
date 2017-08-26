@@ -146,13 +146,47 @@ class Meta:
             else:
                 raise Exception("Response code was not ok. Got {0.status_code}".format(r))
         except Exception as e:
-            Log.objects.create(message="Avatar could not be updated!\n{1}\n{2}".format(logify_exception_info(), e))
+            Log.objects.create(message="Avatar could not be updated!\n{0}\n{1}".format(logify_exception_info(), e))
             print(e)
         finally:
             try:
                 os.remove(path)
             except:
                 pass
+
+    @commands.command()
+    @commands.is_owner()
+    async def alert(self, ctx, *, content : str):
+        """
+        Alerts Guild Owners with a message
+        """
+        app_info = await self.bot.application_info()
+        embed_args = {
+            "title": "Live Bot Notification".format(app_info.owner),
+            "description": "{}".format(content),
+            "colour": discord.Colour.red(),
+            "timestamp": ctx.message.created_at,
+        }
+        embed = discord.Embed(**embed_args)
+        avatar_url = self.bot.user.default_avatar_url if not self.bot.user.avatar else self.bot.user.avatar_url
+        embed.set_author(name=ctx.author, url=self.bot.github_url, icon_url=avatar_url)
+        embed.set_thumbnail(url=self.bot.user.avatar_url)
+        owners_alerted = []
+        for guild in self.bot.guilds:
+            if guild.id not in [320309192084684812, 225471771355250688]:
+                continue
+            if not guild.owner in owners_alerted:
+                alert_args = {
+                    "owner": guild.owner,
+                    "content": f"\N{HEAVY EXCLAMATION MARK SYMBOL} **Message from {app_info.owner}** \N{HEAVY EXCLAMATION MARK SYMBOL}\n\n```{content}```",
+                    "embed": embed,
+                }
+                self.bot.loop.create_task(self.alert_owner(**alert_args))
+                owners_alerted.append(guild.owner)
+        await ctx.send("\N{OK HAND SIGN} Message has been sent to {} guild owners.".format(len(owners_alerted)))
+
+    async def alert_owner(self, owner, content, embed):
+        await owner.send(content=f"{content}\n\nSupport server: https://discord.gg/zXkb4JP", embed=embed)
 
 
 def setup(bot):
