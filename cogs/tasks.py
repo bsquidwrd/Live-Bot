@@ -113,7 +113,10 @@ class Tasks:
                     # embed.set_image(url=stream['preview']['medium'])
                     embed.set_footer(text="ID: {} | Stream start time".format(twitch.id))
                     if not live_notification.success:
-                        await channel.send("{}".format(message), embed=embed)
+                        try:
+                            await channel.send("{}".format(message), embed=embed)
+                        except Exception as e:
+                            raise Exception("Unable to send a message to channel ID {} in guild id {} for stream ID {}\n{}".format(channel.id, channel.guild.id, twitch.id, e))
 
             elif notification.content_type == twitter_content_type:
                 twitter = communicate.Twitter(log=log, uid=notification.object_id)
