@@ -118,6 +118,8 @@ class Meta:
 
     async def run_tasks(self):
         try:
+            while not self.bot.is_ready():
+                await asyncio.sleep(1)
             while not self.bot.is_closed():
                 await self.update_avatar()
                 await asyncio.sleep(3600)
@@ -131,6 +133,8 @@ class Meta:
         path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
         try:
             app_info = await self.bot.application_info()
+            if app_info.icon_url is None or app_info.icon_url == "":
+                return
             r = requests.get(app_info.icon_url)
             if r.status_code == 200:
                 with open(path, 'wb') as f:
