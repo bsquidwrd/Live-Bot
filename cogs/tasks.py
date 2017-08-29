@@ -55,6 +55,19 @@ class Tasks:
 
             result = requests.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
             if not result.ok:
+                log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(result.text))
+                app_info = await self.bot.application_info()
+                error_embed_args = {
+                    'title': "Error Running Tasks",
+                    'description': "Could not retrieve list of streams that are benig monitored.",
+                    'colour': discord.Colour.red(),
+                    'timestamp': log_item.timestamp,
+                }
+                error_embed = discord.Embed(**error_embed_args)
+                error_embed.set_author(name=self.bot.user.name, icon_url=app_info.icon_url)
+                error_embed.add_field(name="Status Code", value=str(result.status_code), inline=False)
+                error_embed.add_field(name="Message Token", value=log_item.message_token, inline=False)
+                await app_info.owner.send(content="Could not check for streams that were live. Result is not okay.", embed=error_embed)
                 return
 
             result_json = result.json()
@@ -80,7 +93,19 @@ class Tasks:
                             self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
             print("{}\n{}\n{}".format(logify_exception_info(), e, result))
-            pass
+            log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}".format(logify_exception_info(), e))
+            app_info = await self.bot.application_info()
+            error_embed_args = {
+                'title': "Error Running Tasks",
+                'description': str(logify_exception_info()),
+                'colour': discord.Colour.red(),
+                'timestamp': log_item.timestamp,
+            }
+            error_embed = discord.Embed(**error_embed_args)
+            error_embed.set_author(name=self.bot.user.name, icon_url=app_info.icon_url)
+            error_embed.add_field(name="Exception", value=str(e), inline=False)
+            error_embed.add_field(name="Message Token", value=log_item.message_token, inline=False)
+            await app_info.owner.send(content="Something went wrong when trying to run through the tasks. Message Token: {}".format(log_item.message_token), embed=error_embed)
 
     async def alert(self, stream, notification, live_notification):
         discord_content_type = DiscordChannel.get_content_type()
@@ -105,13 +130,12 @@ class Tasks:
                         'timestamp': timestamp,
                     }
                     embed = discord.Embed(**embed_args)
-                    app_info = await self.bot.application_info()
                     embed.set_author(name=stream['channel']['display_name'], icon_url=app_info.icon_url)
                     embed.set_thumbnail(url=stream['channel']['logo'])
                     game_name = stream['game']
                     if game_name is None:
                         game_name = '[Not Set]'
-                    embed.add_field(name="Game", value=stream['game'], inline=True)
+                    embed.add_field(name="Game", value=game_name, inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])
                     embed.set_footer(text="ID: {} | Stream start time".format(twitch.id))
