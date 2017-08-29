@@ -1,5 +1,5 @@
 from discord.ext import commands
-from cogs.utils import logify_exception_info, logify_dict, communicate
+from cogs.utils import logify_exception_info, logify_dict, communicate, current_line
 from dateutil.parser import parse
 import asyncio
 import discord
@@ -119,7 +119,7 @@ class Tasks:
                         try:
                             await channel.send("{}".format(message), embed=embed)
                         except Exception as e:
-                            raise Exception("Unable to send a message to channel ID {} in guild id {} for stream ID {}\n{}".format(channel.id, channel.guild.id, twitch.id, e))
+                            raise Exception("Unable to send a message to channel ID {} in guild id {} for stream ID {}\nLine number {}\n{}".format(channel.id, channel.guild.id, twitch.id, current_line(), e))
 
             elif notification.content_type == twitter_content_type:
                 twitter = communicate.Twitter(log=log, uid=notification.object_id)
