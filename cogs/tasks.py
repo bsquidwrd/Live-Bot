@@ -108,6 +108,9 @@ class Tasks:
                     app_info = await self.bot.application_info()
                     embed.set_author(name=stream['channel']['display_name'], icon_url=app_info.icon_url)
                     embed.set_thumbnail(url=stream['channel']['logo'])
+                    game_name = stream['game']
+                    if game_name is None:
+                        game_name = '[Not Set]'
                     embed.add_field(name="Game", value=stream['game'], inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])
