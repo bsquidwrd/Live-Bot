@@ -90,7 +90,8 @@ class LiveBot:
                     'colour': discord.Colour.dark_purple(),
                 }
                 wait_message_embed = discord.Embed(**wait_message_args)
-                wait_message_embed.set_thumbnail(url=result['logo'])
+                if result['logo']:
+                    wait_message_embed.set_thumbnail(url=result['logo'])
                 wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
                 wait_message_embed.set_footer(text="Please type YES or NO")
                 wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)

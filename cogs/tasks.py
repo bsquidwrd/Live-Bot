@@ -56,6 +56,7 @@ class Tasks:
             channels_appended = ",".join([twitch.name for twitch in twitch_channels])
 
             result = requests.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
+            result_json = result.json()
             if not result.ok:
                 log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(result.text))
                 app_info = await self.bot.application_info()
@@ -67,12 +68,13 @@ class Tasks:
                 }
                 error_embed = discord.Embed(**error_embed_args)
                 error_embed.set_author(name=self.bot.user.name, icon_url=app_info.icon_url)
-                error_embed.add_field(name="Status Code", value=str(result.status_code), inline=False)
+                error_embed.add_field(name="Error", value=result_json["error"], inline=True)
+                error_embed.add_field(name="Status Code", value=result_json["status"], inline=True)
+                error_embed.add_field(name="Message", value=result_json["message"], inline=False)
                 error_embed.add_field(name="Message Token", value=log_item.message_token, inline=False)
                 await log_channel.send(content="Could not check for streams that were live. Result is not okay.", embed=error_embed)
                 return
 
-            result_json = result.json()
             if result_json["_total"] == 0:
                 # No streams live right now, continue on
                 return
