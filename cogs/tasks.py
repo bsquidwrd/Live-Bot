@@ -6,6 +6,7 @@ import discord
 import requests
 
 import web.wsgi
+from web import environment
 from livebot.models import *
 from django.db.models import Count
 from allauth.socialaccount.models import SocialApp
@@ -44,6 +45,7 @@ class Tasks:
 
     async def run_scheduled_tasks(self):
         try:
+            log_channel = self.bot.get_channel(environment.LOG_CHANNEL_ID)
             result = None
             twitch_channels = TwitchChannel.objects.annotate(Count('twitchnotification')).filter(twitchnotification__count__gte=1)
 
@@ -67,7 +69,7 @@ class Tasks:
                 error_embed.set_author(name=self.bot.user.name, icon_url=app_info.icon_url)
                 error_embed.add_field(name="Status Code", value=str(result.status_code), inline=False)
                 error_embed.add_field(name="Message Token", value=log_item.message_token, inline=False)
-                await app_info.owner.send(content="Could not check for streams that were live. Result is not okay.", embed=error_embed)
+                await log_channel.send(content="Could not check for streams that were live. Result is not okay.", embed=error_embed)
                 return
 
             result_json = result.json()
@@ -105,7 +107,7 @@ class Tasks:
             error_embed.set_author(name=self.bot.user.name, icon_url=app_info.icon_url)
             error_embed.add_field(name="Exception", value=str(e), inline=False)
             error_embed.add_field(name="Message Token", value=log_item.message_token, inline=False)
-            await app_info.owner.send(content="Something went wrong when trying to run through the tasks. Message Token: {}".format(log_item.message_token), embed=error_embed)
+            await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=error_embed)
 
     async def alert(self, stream, notification, live_notification):
         discord_content_type = DiscordChannel.get_content_type()
