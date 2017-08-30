@@ -222,7 +222,8 @@ class LiveBot:
                         'colour': discord.Colour.dark_purple(),
                     }
                     embed = discord.Embed(**embed_args)
-                    embed.set_thumbnail(url=result['logo'])
+                    if result['logo']:
+                        embed.set_thumbnail(url=result['logo'])
                     embed.add_field(name="Notify everyone?", value=str(mention_everyone), inline=True)
                     embed.add_field(name="Message", value=message_for_notification, inline=True)
                     embed.add_field(name="Channels", value=added_channels_message, inline=False)
