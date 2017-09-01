@@ -43,6 +43,18 @@ class Tasks:
         except asyncio.CancelledError as e:
             pass
 
+    def create_embed(self, d : dict, title : str = None, description : str = None, colour=None, timestamp=None, author : dict = {}):
+        embed = discord.Embed(title=title, description=description, colour=colour, timestamp=timestamp)
+        if author.get("name", None) is None:
+            author["name"] = self.bot.user.name
+        embed.set_author(**author)
+        for key in d:
+            value = d[key]
+            if value is None or value == "":
+                continue
+            embed.add_field(name=key.title(), value=value, inline=True)
+        return embed
+
     async def run_scheduled_tasks(self):
         try:
             log_channel = self.bot.get_channel(environment.LOG_CHANNEL_ID)
@@ -66,12 +78,12 @@ class Tasks:
                     'colour': discord.Colour.red(),
                     'timestamp': log_item.timestamp,
                 }
-                error_embed = discord.Embed(**error_embed_args)
-                error_embed.set_author(name=self.bot.user.name, icon_url=app_info.icon_url)
-                error_embed.add_field(name="Error", value=result_json["error"], inline=True)
-                error_embed.add_field(name="Status Code", value=result_json["status"], inline=True)
-                error_embed.add_field(name="Message", value=result_json["message"], inline=False)
-                error_embed.add_field(name="Message Token", value=log_item.message_token, inline=False)
+                author_dict = {
+                    'name': self.bot.user.name,
+                    'icon_url': app_info.icon_url,
+                }
+                result_json["message token"] = log_item.message_token
+                error_embed = self.create_embed(d=result_json, author=author_dict, **error_embed_args)
                 await log_channel.send(content="Could not check for streams that were live. Result is not okay.", embed=error_embed)
                 return
 
@@ -96,19 +108,25 @@ class Tasks:
                                 live_notification = live_notifications.filter(success=False)[0]
                             self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
-            print("{}\n{}\n{}".format(logify_exception_info(), e, result))
+            print("{}\n{}".format(logify_exception_info(), e))
             log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}".format(logify_exception_info(), e))
             app_info = await self.bot.application_info()
+
             error_embed_args = {
                 'title': "Error Running Tasks",
                 'description': str(logify_exception_info()),
                 'colour': discord.Colour.red(),
                 'timestamp': log_item.timestamp,
             }
-            error_embed = discord.Embed(**error_embed_args)
-            error_embed.set_author(name=self.bot.user.name, icon_url=app_info.icon_url)
-            error_embed.add_field(name="Exception", value=str(e), inline=False)
-            error_embed.add_field(name="Message Token", value=log_item.message_token, inline=False)
+            author_dict = {
+                'name': self.bot.user.name,
+                'icon_url': app_info.icon_url,
+            }
+            error_info = {
+                "exception": str(e),
+                "message token": log_item.message_token,
+            }
+            error_embed = self.create_embed(d=error_info, author=author_dict, **error_embed_args)
             await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=error_embed)
 
     async def alert(self, stream, notification, live_notification):
