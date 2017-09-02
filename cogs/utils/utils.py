@@ -1,3 +1,5 @@
+import asyncio
+import discord
 import json
 import sys
 from inspect import getframeinfo, getouterframes, currentframe
@@ -50,3 +52,24 @@ def current_line():
     Returns the current line the function is called from
     """
     return getouterframes(currentframe())[1].lineno
+
+
+def create_embed(d : dict, title : str = None, description : str = None, colour=None, timestamp=None, author : dict = {}):
+    embed = discord.Embed(title=title, description=description, colour=colour, timestamp=timestamp)
+    if author.get("name", None) is None:
+        author["name"] = self.bot.user.name
+    embed.set_author(**author)
+    for key in d:
+        value = d[key]
+        if value is None or value == "":
+            continue
+        embed.add_field(name=key.title(), value=value, inline=True)
+    return embed
+
+
+async def log_error(bot, content : str, **embed_args):
+    from livebot.models import Log
+    from web import environment
+    log_channel = bot.get_channel(environment.LOG_CHANNEL_ID)
+    embed = create_embed(**embed_args)
+    return await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=error_embed)

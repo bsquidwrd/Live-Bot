@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from cogs.utils.utils import logify_exception_info
+from cogs.utils import logify_exception_info
 
 
 class TwitchChannel(models.Model):

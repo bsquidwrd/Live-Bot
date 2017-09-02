@@ -1,5 +1,6 @@
 from discord.ext import commands
 from cogs.utils import logify_exception_info, logify_dict, communicate, current_line
+from cogs.utils import logify_exception_info, logify_dict, communicate, current_line, log_error
 from dateutil.parser import parse
 import asyncio
 import discord
@@ -43,21 +44,8 @@ class Tasks:
         except asyncio.CancelledError as e:
             pass
 
-    def create_embed(self, d : dict, title : str = None, description : str = None, colour=None, timestamp=None, author : dict = {}):
-        embed = discord.Embed(title=title, description=description, colour=colour, timestamp=timestamp)
-        if author.get("name", None) is None:
-            author["name"] = self.bot.user.name
-        embed.set_author(**author)
-        for key in d:
-            value = d[key]
-            if value is None or value == "":
-                continue
-            embed.add_field(name=key.title(), value=value, inline=True)
-        return embed
-
     async def run_scheduled_tasks(self):
         try:
-            log_channel = self.bot.get_channel(environment.LOG_CHANNEL_ID)
             result = None
             twitch_channels = TwitchChannel.objects.annotate(Count('twitchnotification')).filter(twitchnotification__count__gte=1)
 
@@ -83,8 +71,7 @@ class Tasks:
                     'icon_url': app_info.icon_url,
                 }
                 result_json["message token"] = log_item.message_token
-                error_embed = self.create_embed(d=result_json, author=author_dict, **error_embed_args)
-                await log_channel.send(content="Could not check for streams that were live. Result is not okay.", embed=error_embed)
+                await log_error(self.bot, content="Could not check for streams that were live. Result is not okay.", d=result_json, author=author_dict, **error_embed_args)
                 return
 
             if result_json["_total"] == 0:
@@ -126,8 +113,7 @@ class Tasks:
                 "exception": str(e),
                 "message token": log_item.message_token,
             }
-            error_embed = self.create_embed(d=error_info, author=author_dict, **error_embed_args)
-            await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=error_embed)
+            await log_error(content="Something went wrong when trying to run through the tasks.", d=error_info, author=author_dict, **error_embed_args)
 
     async def alert(self, stream, notification, live_notification):
         discord_content_type = DiscordChannel.get_content_type()

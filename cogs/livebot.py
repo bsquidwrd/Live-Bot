@@ -1,5 +1,5 @@
 from discord.ext import commands
-from cogs.utils import checks, logify_exception_info, logify_dict, communicate
+from cogs.utils import checks, logify_exception_info, logify_dict, communicate, log_error
 import asyncio
 import discord
 import requests
@@ -48,7 +48,7 @@ class LiveBot:
     @monitor_command.command(aliases=["edit"], name="add")
     async def monitor_add_command(self, ctx):
         """
-        Start monitoring a channel for when they go live
+        Start/Edit monitoring a channel for when they go live
         """
         def author_check(m):
             return m.author.id == ctx.author.id
@@ -184,6 +184,7 @@ class LiveBot:
                 else:
                     # User mentioned channels
                     added_channels = []
+                    no_perms_channels = []
                     discord_guild = DiscordGuild.objects.get_or_create(id=ctx.guild.id)[0]
                     try:
                         discord_guild.name = ctx.guild.name
@@ -192,6 +193,10 @@ class LiveBot:
                         pass
 
                     for channel in response_message.channel_mentions:
+                        channel_permissions = channel.permissions_for(ctx.guild.get_member(self.bot.user.id))
+                        if not channel_permissions.embed_links or not channel_permissions.send_messages:
+                            no_perms_channels.append(channel)
+                            continue
                         discord_channel = DiscordChannel.objects.get_or_create(id=channel.id, guild=discord_guild)[0]
                         try:
                             discord_channel.name = channel.name
@@ -215,22 +220,36 @@ class LiveBot:
                         except:
                             continue
 
-                    added_channels_message = ", ".join([c.name for c in added_channels])
+                    if len(no_perms_channels) >= 1:
+                        no_perms_channels_message = ", ".join([c.name for c in no_perms_channels])
+                        no_perms_embed_args = {
+                            'description': "I don't have `embed links` and `send messages` permission in the following channels, so I won't notify them.\n\nIf you want them notified, please re-run the command after I have the proper permissions.",
+                            'colour': discord.Colour.red(),
+                        }
+                        no_perms_embed = discord.Embed(**no_perms_embed_args)
+                        no_perms_embed.add_field(name="Channels", value=no_perms_channels_message, inline=False)
+                        await ctx.send("{0.author.mention}".format(ctx), embed=no_perms_embed, delete_after=120.0)
 
-                    embed_args = {
-                        'description': "I will monitor for when **{0.name}** goes live!".format(twitch_channel),
-                        'colour': discord.Colour.dark_purple(),
-                    }
-                    embed = discord.Embed(**embed_args)
-                    if result['logo']:
-                        embed.set_thumbnail(url=result['logo'])
-                    embed.add_field(name="Notify everyone?", value=str(mention_everyone), inline=True)
-                    embed.add_field(name="Message", value=message_for_notification, inline=True)
-                    embed.add_field(name="Channels", value=added_channels_message, inline=False)
-                    app_info = await self.bot.application_info()
-                    avatar = app_info.owner.default_avatar_url if not app_info.owner.avatar else app_info.owner.avatar_url
-                    embed.set_footer(text = "Developer/Owner: {0.name}#{0.discriminator} (Shard ID: {1})".format(app_info.owner, ctx.guild.shard_id), icon_url = avatar)
-                    await ctx.send("{0.author.mention}".format(ctx), embed=embed, delete_after=60.0)
+                    if len(added_channels) >= 1:
+                        added_channels_message = ", ".join([c.name for c in added_channels])
+                        embed_args = {
+                            'description': "I will monitor for when **{0.name}** goes live!".format(twitch_channel),
+                            'colour': discord.Colour.dark_purple(),
+                        }
+                        embed = discord.Embed(**embed_args)
+                        if result['logo']:
+                            embed.set_thumbnail(url=result['logo'])
+                        embed.add_field(name="Notify everyone?", value=str(mention_everyone), inline=True)
+                        embed.add_field(name="Message", value=message_for_notification, inline=True)
+                        embed.add_field(name="Channels", value=added_channels_message, inline=False)
+                        app_info = await self.bot.application_info()
+                        avatar = app_info.owner.default_avatar_url if not app_info.owner.avatar else app_info.owner.avatar_url
+                        embed.set_footer(text = "Developer/Owner: {0.name}#{0.discriminator} (Shard ID: {1})".format(app_info.owner, ctx.guild.shard_id), icon_url = avatar)
+                        await ctx.send("{0.author.mention}".format(ctx), embed=embed, delete_after=60.0)
+
+                    if len(added_channels) == 0 and len(no_perms_channels) == 0:
+
+                        await ctx.send("{0.author.mention}: It looks like I wasn't able to understand the channels you provided me or add a notification for them. If this continues to happen, please use the support command to notify my owner.", delete_after=60.0)
 
             else:
                 try:
