@@ -130,6 +130,11 @@ class LiveBot(commands.AutoShardedBot):
 
 
 if __name__ == '__main__':
+    if 'TRAVIS' in os.environ or any('test' in arg.lower() for arg in sys.argv):
+        debug_mode = True
+        initial_extensions += (
+            'cogs.travis',
+        )
     bot = LiveBot()
     bot.run()
     handlers = log.handlers[:]

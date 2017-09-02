@@ -144,7 +144,7 @@ class Tasks:
                     if stream['channel']['logo']:
                         embed.set_thumbnail(url=stream['channel']['logo'])
                     game_name = stream['game']
-                    if game_name is None:
+                    if game_name is None or game_name == "":
                         game_name = '[Not Set]'
                     embed.add_field(name="Game", value=game_name, inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
