@@ -10,9 +10,10 @@ import aiohttp
 import sys
 from collections import Counter
 import os
+import importlib
 
 import web.wsgi
-from cogs.utils.utils import logify_exception_info, logify_dict
+from cogs.utils import logify_exception_info, logify_dict
 
 debug_mode = os.getenv('LIVE_BOT_DEBUG_MODE', 'true')
 if not isinstance(debug_mode, bool):
@@ -86,6 +87,10 @@ class LiveBot(commands.AutoShardedBot):
         print('resumed...')
 
     async def process_commands(self, message):
+        try:
+            importlib.reload(web.environment)
+        except Exception as e:
+            print(e)
         ctx = await self.get_context(message)
 
         if ctx.command is None:

@@ -1,15 +1,15 @@
 from discord.ext import commands
-from cogs.utils import logify_exception_info, logify_dict, communicate, current_line
 from cogs.utils import logify_exception_info, logify_dict, communicate, current_line, log_error
 from dateutil.parser import parse
 import asyncio
 import discord
 import requests
+import os
 
 import web.wsgi
-from web import environment
 from livebot.models import *
 from django.db.models import Count
+from django.utils import timezone
 from allauth.socialaccount.models import SocialApp
 
 
@@ -38,6 +38,8 @@ class Tasks:
 
     async def run_tasks(self):
         try:
+            while not self.bot.is_ready():
+                await asyncio.sleep(1)
             while not self.bot.is_closed():
                 await self.run_scheduled_tasks()
                 await asyncio.sleep(60)
@@ -71,7 +73,7 @@ class Tasks:
                     'icon_url': app_info.icon_url,
                 }
                 result_json["message token"] = log_item.message_token
-                await log_error(self.bot, content="Could not check for streams that were live. Result is not okay.", d=result_json, author=author_dict, **error_embed_args)
+                await log_error(bot=self.bot, content="Could not check for streams that were live. Result is not okay.", d=result_json, author=author_dict, **error_embed_args)
                 return
 
             if result_json["_total"] == 0:
@@ -113,7 +115,7 @@ class Tasks:
                 "exception": str(e),
                 "message token": log_item.message_token,
             }
-            await log_error(content="Something went wrong when trying to run through the tasks.", d=error_info, author=author_dict, **error_embed_args)
+            await log_error(bot=self.bot, content="Something went wrong when trying to run through the tasks.", d=error_info, author=author_dict, **error_embed_args)
 
     async def alert(self, stream, notification, live_notification):
         discord_content_type = DiscordChannel.get_content_type()

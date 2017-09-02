@@ -2,6 +2,7 @@ import asyncio
 import discord
 import json
 import sys
+import os
 from inspect import getframeinfo, getouterframes, currentframe
 
 DISCORD_MSG_CHAR_LIMIT = 2000
@@ -68,8 +69,8 @@ def create_embed(d : dict, title : str = None, description : str = None, colour=
 
 
 async def log_error(bot, content : str, **embed_args):
+    import web.wsgi
     from livebot.models import Log
-    from web import environment
-    log_channel = bot.get_channel(environment.LOG_CHANNEL_ID)
+    log_channel = bot.get_channel(int(os.environ['LOG_CHANNEL_ID']))
     embed = create_embed(**embed_args)
-    return await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=error_embed)
+    await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=embed)

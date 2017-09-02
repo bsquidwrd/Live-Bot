@@ -132,6 +132,10 @@ class Meta:
         """
         path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
         try:
+            os.remove(path)
+        except:
+            pass
+        try:
             app_info = await self.bot.application_info()
             if app_info.icon_url is None or app_info.icon_url == "":
                 return
@@ -147,11 +151,6 @@ class Meta:
         except Exception as e:
             Log.objects.create(message="Avatar could not be updated!\n{0}\n{1}".format(logify_exception_info(), e))
             print(e)
-        finally:
-            try:
-                os.remove(path)
-            except:
-                pass
 
     @commands.command()
     @commands.is_owner()
