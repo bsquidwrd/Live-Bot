@@ -1,31 +1,31 @@
 language: python
 dist: trusty
 python:
-  - 3.6.1
-
+- 3.6.1
 services: postgresql
 cache: pip
-
 before_install:
-  - export PIP_USE_MIRRORS=true
-
+- export PIP_USE_MIRRORS=true
 install:
-  - pip install -r requirements.txt
-  - pip install psycopg2 --quiet
-
+- pip install -r requirements.txt
+- pip install psycopg2 --quiet
 before_script:
-  - cp web/environment_example.py web/environment.py
-  - psql -c "CREATE DATABASE travisci;" -U postgres
-
+- cp web/environment_example.py web/environment.py
+- psql -c "CREATE DATABASE travisci;" -U postgres
 script:
-  - python manage.py migrate --noinput
-  - coverage run --source='.' manage.py test
-  - python bot.py test
-
+- python manage.py migrate --noinput
+- coverage run --source='.' manage.py test
+- python bot.py test
 notifications:
   email:
     on_success: never
     on_failure: always
-
 after_success:
-    - coveralls
+- coveralls
+env:
+  global:
+  - secure: uDd9W6hyFVy34Nd6QRXsovidEYT6AGujjE6r24JgK8xRSEyXBoYWFOSSeRu0/qY2e2cT8eOty9FIKjTnj/a850krt53sAPajfaprYtC8GZ2RW03U/eeeH3FH5PKyJY2VjDHNBUSeVrqv/yVaBedeMBtcQd5FyUNTbQrXc6xNoUPW6X/S1PrhK/heL3Yfn5qKjHZawgZcb4G1a8U0ikx6qryf+RQkbAspps3u1J1W6WaHAXnsKEd3ZOiI6ku8IpqcB+33lbR/vhHLCHjcn+qGKo7LUhCnG9auH57rt5fPE/X0tGy7KRARWCz7zS/NQx/p/Qh7GiW1XLw3Y/Psv8T+sOFHOteu3knTo7CVwXcsCAOz8qztbQJ6czBIRhdAi24Hr3sUB3PRf8x6Xl6YZoi44iReam8sgd8KxQbw8NE4s8/YRbGDle2AnZEtEmlKZAMOx8g2HRkQwo4l7HwNOoAAPnCkkBbe26BL9jKweenJbvEg//uP8R2e90Br9n0ETR/ZOo49lFS68tNlpfrPbXqOJ53rl7nJvAA4EYK9tOAFlE/MIQ5juY4BpOfmiLiASNZKBm91q2Rhc+mU05t2J4QDL9KjuaPP2DaCZG+2DOwa9UpRIRuzLFPGEQgqjKeREcnhIg+iBoDIMxXJboMFLbGTc3oDHq0+bJRc+MD4dEy30Po=
+  - secure: qYML7PrpnIS9XJJ8UXB4x5BI8L+MzpxDt1/x1uDFDhUKUJl+KcKpN35pQZlphhcQf/KuyT3v4wAsHGOyaBAuIVpii3AqZEOuWic4d5ra+ZtmA4K+qeod2RrIg9P7DklGvy2124rSrBnyf/NjC5K/btJ70djdPtRjWDAE9SFzt0/aEBS1cU+KcyK6c3JtWoDo+k7WffVPOy1QnKn1tmsPfP9vHj4CSkdbgq4vNR146pXieiT54meMvISNU4MWCCBkQDDTCimufz1ZOh1vaxJpPeZSvKTzC5eA/CcO16BRxrI/gqvk/v19YYF7dj8OuFH4iUuNAnshm1Pf/Dylvob8iYiH1gI4hcKKx3fALkKRFWgZCThsffJgPEEqPVhzoFkLKh2XowSzx+NSPyXfkq5lbb3qRCPWsQpY6IB3prp5aINGWyabiBtSRtYH6obabLX9Fv1zTdCLTLSTcA3JPSrJ9DIIK1ocG5/iRv4kgROqJeDLiKo5z7uNehS4IYqspuHY9pgdCoNHMR8Bc6cMUPCNoI11tF53nd3ZmqFYJvLHJtFekjBs3C0usTQhMM9Yww9hBiMCy1MnZkN2o0JbmTaH/F7a2IKdEPXFR+5Uu9C+VmCYUSDCRYvHNnTe1jHjjKTxhUDHZIQ4BJuz9Dvm2C9lOfeMNQvnaqQhTirnl5zIRyo=
+  - secure: Oo70SnoYGiuXnbdtR8ax3OqOgbz4hc+vXW4yA88+3qDx3uIkErRq2q0ffnukfrCJisf1YexYL1xCgCtmCeBpfxUTZFYD3l3KCKTIC5pfxs3jfqlABWODl7dOfP7g7xA2Fk/IlCQCLKU2yUA7pY56m0ZR0mKzmA+iRUrLV7S9pUDxji/MMS+/hCnWv31lbwFLBXYYwOL5q5za0r0ehYdEGPKcBdfJig5tA/F1d4nXg10uRLPWi0oXKUQZFuM82PvW5/mfa44/tlQcX7MWKrf7cryOd/yJ7dmQbnPZONLnRbfKPXDLTsMfuaIwPnivsJD+mJc0Y1EI7S92GYg6LRGkZyQPHKGeXFT+XPEZKNHjXKVz7W97PhSLKx0QReVHU80bHBcMmFtCKg9WYZZyrUspKUo/6/fJqvzb78ZYvdbROosrAJ37vtMilhxP5YsaSQMboYufrh1tYVecHPh3qv4wp3M/kaxc7tI9BIPLnUWj+b70o8AkfVi4wEgAVd1blg1FuqzbG4wqEEm7c3xenASCI6jWTjtydTEqBb/Au0KQZloMTr+pPZkD9EBuSMVzACh820Or/QW+USu2ileENwgyF+hOCsAv5qqziWkkICB+YJ+Zy1E8GIuWEnHF8CMA0LXkwgGu5x3XhiapCq1PmE0gwRt4/RanTiHMHSTALgzMReQ=
+  - secure: a1XNG/+nEXTw8mIaaKpBQGRFqFwny1hOtxL58jZ4zhjaFvrPjrkNotqk8mRcJPbXD0NBidGTzsS04GQTPRQ0MNSBOfGzTER6ErhoDlrG8DYtP1ncatbRM8ewhMSnu0Qxqp73Xxx/bbSk56HQdJbdPokc96TywvP/Q2UyBwKX155wojzYBX6slVeVPP+OQ702DLQBIggUKcOC1qHnCEWpKiKDiLH1po5Ekra5d1n8pcxGkeVMmhKDK1BB5JFy5WIyugWr/hI1AzEDNJgbJ0msdNaOSfEesNI5UoASQkGaw6DW3oDTb+F/mAzkMf1gAWzJTQkBf/oS8dQhtFoR8h/oDYvSWlyLdAHg79JAgLGuNWI+EtpAdeIUAf9ndJmzNIjpdhZwGNJzbFfXLnHch4+ebeypitys7dSpOSv6Ow5nhuydT4AdUAzdZp8WTyQwywfvzdci/+UFDYh2TB6iJBArPygQOfGpaP2Yat6py/XhtObvDzF7vbPgN5xHaMn/V4gwy2XI+xcdXB7zRFp2lwuKCWq1dQBvcdpmtUnMTRfdukoa8FzhX1rwPK+krQcsCViutC4f5mMnELP96T5HdxnXPYhGRjw+6Z5fgF6sWsYLAgA3lMzAjZ8uFuQe2pWvV2vAzWNFZ9vKWZXL9wPnLi6XDp9WrNzFZ03TzsAB32Yesps=
+  - secure: tWCWYCDS5qRwl0E/g5d/yyfdjg+SISjkz89i5W7TVgmYIM8ekyHndL52ZUm4RpzYTOtNJXujEDSeiBn4QEUe8S7CJVa+IlKH+ev6LQNv1FewK9haSlTXZ/Ok13flpZyB92L6fnju29ymLYyzHsyfKQzvqFjuIelaamIhRdCiX1iovPGYX9iKKD7QSvFOsJWCDYgJN7nNvCs41pvcAydcDJDW4oN/ffoTvw6IhO7QiNjqXJcGlxL5Cxa4gZRT/4cDdHapdcQLHMQk7mtPYsch579EDztsvQgfU5HFaCSFT6Lx/GXFmv8fh+owM/+uqsEY8VFzKDoGwU2NKEayReC1izekAjAdL/Qf94jPLCypJoC0Zn/pNdvuO6A5WGAsqCKse7LY75xrUz2aG9Urr1VwbtCJhmiJjhwfuPwLXochIJa29fAscjxWoL6+OnbjiLNNc/1OirPBwZfel5s+2FQmbp3hvcH0QgA9H7fkpEgB2kK/jrHRFa5x7fR7vdPzRNNVreBHHqWpmtixjK9pzFN1fWCm5l+Tk/vMnoxQSKus1s1PIvDhowVfhwH0Jt56mOWYzAFXg4Annsx6LR9eBbK5vFYL94WpJsmX1Kiawtl253BRgFuXBosD6YXK5+tKBU2eU0LXOOwAGLj4RS78LRM3ndWaNdGgK9nbYTLGtRJI1jk=
