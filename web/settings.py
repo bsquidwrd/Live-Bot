@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import web.environment
+try:
+    import web.environment
+except:
+    pass
 
 SITE_ID = 1
 
