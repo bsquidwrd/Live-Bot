@@ -13,14 +13,12 @@ before_script:
 - psql -c "CREATE DATABASE travisci;" -U postgres
 script:
 - python manage.py migrate --noinput
-- coverage run --source='.' manage.py test
 - python bot.py test
 notifications:
   email:
     on_success: never
     on_failure: always
 after_success:
-- coveralls
 env:
   global:
   - secure: uDd9W6hyFVy34Nd6QRXsovidEYT6AGujjE6r24JgK8xRSEyXBoYWFOSSeRu0/qY2e2cT8eOty9FIKjTnj/a850krt53sAPajfaprYtC8GZ2RW03U/eeeH3FH5PKyJY2VjDHNBUSeVrqv/yVaBedeMBtcQd5FyUNTbQrXc6xNoUPW6X/S1PrhK/heL3Yfn5qKjHZawgZcb4G1a8U0ikx6qryf+RQkbAspps3u1J1W6WaHAXnsKEd3ZOiI6ku8IpqcB+33lbR/vhHLCHjcn+qGKo7LUhCnG9auH57rt5fPE/X0tGy7KRARWCz7zS/NQx/p/Qh7GiW1XLw3Y/Psv8T+sOFHOteu3knTo7CVwXcsCAOz8qztbQJ6czBIRhdAi24Hr3sUB3PRf8x6Xl6YZoi44iReam8sgd8KxQbw8NE4s8/YRbGDle2AnZEtEmlKZAMOx8g2HRkQwo4l7HwNOoAAPnCkkBbe26BL9jKweenJbvEg//uP8R2e90Br9n0ETR/ZOo49lFS68tNlpfrPbXqOJ53rl7nJvAA4EYK9tOAFlE/MIQ5juY4BpOfmiLiASNZKBm91q2Rhc+mU05t2J4QDL9KjuaPP2DaCZG+2DOwa9UpRIRuzLFPGEQgqjKeREcnhIg+iBoDIMxXJboMFLbGTc3oDHq0+bJRc+MD4dEy30Po=

@@ -1,6 +1,4 @@
 git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
-coveralls==1.2.0
-coverage==4.4.1
 Django==1.11.4
 django-allauth==0.33.0
 requests==2.18.4
