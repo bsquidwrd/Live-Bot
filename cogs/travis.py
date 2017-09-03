@@ -82,7 +82,9 @@ class Travis:
                 }
                 response = await self.bot.session.get("https://api.twitch.tv/kraken/channels/bsquidwrd", headers=headers)
                 embed.add_field(name="Twitch Response", value=response.status, inline=True)
-                embed.set_thumbnail(url=response.json().)
+                response_json = response.json()
+                if response_json['logo'] is not None and response_json['logo'] != "":
+                    embed.set_thumbnail(url=['logo'])
             except Exception as e:
                 print(e)
 
