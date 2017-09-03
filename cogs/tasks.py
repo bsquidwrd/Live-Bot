@@ -141,7 +141,7 @@ class Tasks:
                     }
                     embed = discord.Embed(**embed_args)
                     embed.set_author(name=stream['channel']['display_name'], icon_url=app_info.icon_url)
-                    if stream['channel']['logo']:
+                    if stream['channel']['logo'] and stream['channel']['logo'] != "":
                         embed.set_thumbnail(url=stream['channel']['logo'])
                     game_name = stream['game']
                     if game_name is None or game_name == "":
