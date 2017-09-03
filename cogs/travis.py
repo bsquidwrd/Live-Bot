@@ -82,11 +82,11 @@ class Travis:
                 }
                 response = await self.bot.session.get("https://api.twitch.tv/kraken/channels/bsquidwrd", headers=headers)
                 embed.add_field(name="Twitch Response", value=response.status, inline=True)
-                response_json = response.json()
-                if response_json['logo'] is not None and response_json['logo'] != "":
-                    embed.set_thumbnail(url=['logo'])
+                response_json = await response.json()
+                if response_json['logo'] and response_json['logo'] != "":
+                    embed.set_thumbnail(url=response_json['logo'])
             except Exception as e:
-                print(e)
+                print(logify_exception_info(), e)
 
             await log_channel.send(content="Test Results", embed=embed)
         except Exception as e:
