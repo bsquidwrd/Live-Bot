@@ -4,6 +4,7 @@ import json
 import sys
 import os
 from inspect import getframeinfo, getouterframes, currentframe
+from itertools import zip_longest
 
 DISCORD_MSG_CHAR_LIMIT = 2000
 
@@ -74,3 +75,7 @@ async def log_error(bot, content : str, **embed_args):
     log_channel = bot.get_channel(int(os.environ['LOG_CHANNEL_ID']))
     embed = create_embed(**embed_args)
     await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=embed)
+
+def grouper(iterable, n, fillvalue=None):
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)

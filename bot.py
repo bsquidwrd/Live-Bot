@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord
-from cogs.utils import checks
+from cogs import utils
 import datetime, re
 import json, asyncio
 import copy
@@ -89,6 +89,7 @@ class LiveBot(commands.AutoShardedBot):
     async def process_commands(self, message):
         try:
             importlib.reload(web.environment)
+            importlib.reload(utils)
         except Exception as e:
             print(e)
         ctx = await self.get_context(message)

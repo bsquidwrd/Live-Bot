@@ -1,10 +1,11 @@
 from discord.ext import commands
-from cogs.utils import logify_exception_info, logify_dict, communicate, current_line, log_error
+from cogs.utils import logify_exception_info, logify_dict, communicate, current_line, log_error, grouper
 from dateutil.parser import parse
 import asyncio
 import discord
 import requests
 import os
+from collections import defaultdict
 
 import web.wsgi
 from livebot.models import *
@@ -49,53 +50,61 @@ class Tasks:
     async def run_scheduled_tasks(self):
         try:
             result = None
-            twitch_channels = TwitchChannel.objects.annotate(Count('twitchnotification')).filter(twitchnotification__count__gte=1)
+            twitch_notifications = defaultdict(list)
+            for n in TwitchNotification.objects.all():
+                twitch_notifications[n.twitch.name].append(n)
 
             headers = {
                 'Client-ID': self.twitch_app.client_id,
             }
 
-            channels_appended = ",".join([twitch.name for twitch in twitch_channels])
+            for notifications in grouper(twitch_notifications, 100):
+                stream_names = []
+                for v in notifications:
+                    # Because it can be None
+                    if v:
+                        stream_names.append(v)
+                channels_appended = ",".join(stream_names)
 
-            result = requests.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
-            result_json = result.json()
-            if not result.ok:
-                log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(result.text))
-                app_info = await self.bot.application_info()
-                error_embed_args = {
-                    'title': "Error Running Tasks",
-                    'description': "Could not retrieve list of streams that are benig monitored.",
-                    'colour': discord.Colour.red(),
-                    'timestamp': log_item.timestamp,
-                }
-                author_dict = {
-                    'name': self.bot.user.name,
-                    'icon_url': app_info.icon_url,
-                }
-                result_json["message token"] = log_item.message_token
-                await log_error(bot=self.bot, content="Could not check for streams that were live. Result is not okay.", d=result_json, author=author_dict, **error_embed_args)
-                return
+                result = requests.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
+                result_json = result.json()
+                if not result.ok:
+                    log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(result.text))
+                    app_info = await self.bot.application_info()
+                    error_embed_args = {
+                        'title': "Error Running Tasks",
+                        'description': "Could not retrieve list of streams that are benig monitored.",
+                        'colour': discord.Colour.red(),
+                        'timestamp': log_item.timestamp,
+                    }
+                    author_dict = {
+                        'name': self.bot.user.name,
+                        'icon_url': app_info.icon_url,
+                    }
+                    result_json["message token"] = log_item.message_token
+                    await log_error(bot=self.bot, content="Could not check for streams that were live. Result is not okay.", d=result_json, author=author_dict, **error_embed_args)
+                    return
 
-            if result_json["_total"] == 0:
-                # No streams live right now, continue on
-                return
+                if result_json["_total"] == 0:
+                    # No streams live right now, continue on
+                    return
 
-            for stream in result_json['streams']:
-                if stream is not None:
-                    if stream['stream_type'] == 'live':
-                        twitch = TwitchChannel.objects.get(id=stream['channel']['_id'])
-                        timestamp = parse(stream['created_at'])
-                        live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
-                        for notification in twitch.twitchnotification_set.all():
-                            live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
-                            if live_notifications.filter(success=True).count() >= 1:
-                                continue
-                            if live_notifications.filter(success=False).count() == 0:
-                                log = Log.objects.create(message="Attempting to notify for {}\n".format(twitch.name))
-                                live_notification = Notification.objects.create(live=live, content_type=notification.content_type, object_id=notification.object_id, success=False, log=log)
-                            else:
-                                live_notification = live_notifications.filter(success=False)[0]
-                            self.bot.loop.create_task(self.alert(stream, notification, live_notification))
+                for stream in result_json['streams']:
+                    if stream is not None:
+                        if stream['stream_type'] == 'live':
+                            twitch = TwitchChannel.objects.get(id=stream['channel']['_id'])
+                            timestamp = parse(stream['created_at'])
+                            live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
+                            for notification in twitch.twitchnotification_set.all():
+                                live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
+                                if live_notifications.filter(success=True).count() >= 1:
+                                    continue
+                                if live_notifications.filter(success=False).count() == 0:
+                                    log = Log.objects.create(message="Attempting to notify for {}\n".format(twitch.name))
+                                    live_notification = Notification.objects.create(live=live, content_type=notification.content_type, object_id=notification.object_id, success=False, log=log)
+                                else:
+                                    live_notification = live_notifications.filter(success=False)[0]
+                                self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
             print("{}\n{}".format(logify_exception_info(), e))
             log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}".format(logify_exception_info(), e))
