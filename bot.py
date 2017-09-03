@@ -14,7 +14,7 @@ import importlib
 
 import web.wsgi
 from cogs.utils import logify_exception_info, logify_dict
-print(os.environ['LIVE_BOT_CLIENT_ID'])
+print("Client-ID: ".format(os.environ['LIVE_BOT_CLIENT_ID']))
 
 debug_mode = os.getenv('LIVE_BOT_DEBUG_MODE', 'true')
 if not isinstance(debug_mode, bool):
