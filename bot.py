@@ -133,7 +133,7 @@ if __name__ == '__main__':
     if 'TRAVIS' in os.environ or any('test' in arg.lower() for arg in sys.argv):
         print("Loading the bot...")
         debug_mode = True
-        initial_extensions += (
+        initial_extensions = (
             'cogs.travis',
         )
     bot = LiveBot()
