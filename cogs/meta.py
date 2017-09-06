@@ -14,13 +14,6 @@ import web.wsgi
 from livebot.models import Log
 from livebot.utils import logify_exception_info
 
-class Prefix(commands.Converter):
-    async def convert(self, ctx, argument):
-        user_id = ctx.bot.user.id
-        if argument.startswith((f'<@{user_id}>', f'<@!{user_id}>')):
-            raise commands.BadArgument('That is a reserved prefix already in use.')
-        return argument
-
 class Meta:
     """Commands for utilities related to Discord or the Bot itself."""
 
