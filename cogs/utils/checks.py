@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 
 # The permission system of the bot is based on a "just works" basis
 # You have permissions and the bot has permissions. If you meet the permissions
@@ -67,4 +68,9 @@ def is_in_guilds(*guild_ids):
         if guild is None:
             return False
         return guild.id in guild_ids
+    return commands.check(predicate)
+
+def is_guild_channel():
+    def predicate(ctx):
+        return type(ctx.channel) == discord.channel.TextChannel
     return commands.check(predicate)

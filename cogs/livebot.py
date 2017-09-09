@@ -35,11 +35,13 @@ class LiveBot:
 
     @commands.group(name="monitor")
     @checks.is_mod()
+    @checks.is_guild_channel()
     async def monitor_command(self, ctx):
         """
         The base command to all the functions I perform.
         See the help page for this command to learn more.
         """
+        print(type(ctx.channel))
         if ctx.invoked_subcommand is None:
             msg = copy.copy(ctx.message)
             msg.content = "{} help monitor".format(self.bot.user.mention)
