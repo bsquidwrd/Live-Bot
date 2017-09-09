@@ -12,7 +12,7 @@
 {% endfor %}
 {% endif %}
 <li>
-    <a title="{{ provider.name }}" role="button" class="btn socialaccount_provider {{ provider.id }}" href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+    <a title="{{ provider.name }}" role="button" class="btn btn-embossed socialaccount_provider {{ provider.id }}" href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
         {% if provider.id == 'twitter' %}
         <i class="fa fa-twitter"></i>
         {% elif provider.id == 'facebook' %}
