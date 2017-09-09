@@ -66,9 +66,9 @@ class Tasks:
                         stream_names.append(v)
                 channels_appended = ",".join(stream_names)
 
-                result = requests.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
-                result_json = result.json()
-                if not result.ok:
+                result = await self.bot.session.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
+                result_json = await result.json()
+                if not result.status == 200:
                     log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(result.text))
                     app_info = await self.bot.application_info()
                     error_embed_args = {
@@ -158,7 +158,7 @@ class Tasks:
                     embed.add_field(name="Game", value=game_name, inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])
-                    embed.set_footer(text="ID: {} | Stream start time".format(twitch.id))
+                    embed.set_footer(text="Stream start time")
                     if not live_notification.success:
                         try:
                             await channel.send("{}".format(message), embed=embed)
