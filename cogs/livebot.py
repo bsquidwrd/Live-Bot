@@ -310,7 +310,7 @@ class LiveBot:
             except:
                 pass
 
-            twitch_channel = TwitchChannel.objects.get(name=response_message.clean_content)
+            twitch_channel = TwitchChannel.objects.get_or_create(name=response_message.clean_content)[0]
             twitch_notifications = twitch_notifications.filter(twitch=twitch_channel)
             twitch_app = SocialApp.objects.get_current('twitch')
             headers = {
