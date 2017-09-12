@@ -69,7 +69,7 @@ class Tasks:
                 result = await self.bot.session.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
                 result_json = await result.json()
                 if not result.status == 200:
-                    log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(logify_dict(resultjson)))
+                    log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(logify_dict(result_json)))
                     app_info = await self.bot.application_info()
                     error_embed_args = {
                         'title': "Error Running Tasks",
