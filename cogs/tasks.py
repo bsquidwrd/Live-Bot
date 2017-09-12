@@ -25,6 +25,10 @@ class Tasks:
         self.bot = bot
         self.twitch_app = SocialApp.objects.get_current('twitch')
         self._task = bot.loop.create_task(self.run_tasks())
+        try:
+            importlib.reload(communicate)
+        except Exception as e:
+            print(e)
 
     def __unload(self):
         self._task.cancel()
