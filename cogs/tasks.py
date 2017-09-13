@@ -6,6 +6,7 @@ import discord
 import requests
 import os
 from collections import defaultdict
+import importlib
 
 import web.wsgi
 from livebot.models import *
