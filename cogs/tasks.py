@@ -72,7 +72,10 @@ class Tasks:
                 channels_appended = ",".join(stream_names)
 
                 result = await self.bot.session.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
-                result_json = await result.json()
+                try:
+                    result_json = await result.json()
+                except Exception as e:
+                    raise Exception("Could not parse JSON from response. Got:\n{}".format(await result.text()))
                 if not result.status == 200:
                     log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(logify_dict(result_json)))
                     app_info = await self.bot.application_info()
