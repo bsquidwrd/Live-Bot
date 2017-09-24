@@ -75,9 +75,17 @@ class Tasks:
                 try:
                     result_json = await result.json()
                 except Exception as e:
-                    raise Exception("Could not parse JSON from response. Got:\n{}".format(await result.text()))
+                    raise Exception("Could not parse JSON from response. Got:")#\n{}".format(await result.text()))
                 if not result.status == 200:
                     log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(logify_dict(result_json)))
+                    try:
+                        for key in result.headers:
+                            value = result.headers[key]
+                            log_item.message += "{}: {}\n".format(key, value)
+                    except:
+                        pass
+                    finally:
+                        log_item.save()
                     app_info = await self.bot.application_info()
                     error_embed_args = {
                         'title': "Error Running Tasks",
@@ -89,8 +97,10 @@ class Tasks:
                         'name': self.bot.user.name,
                         'icon_url': app_info.icon_url,
                     }
-                    result_json["message token"] = log_item.message_token
-                    await log_error(bot=self.bot, content="Could not check for streams that were live. Result is not okay.", d=result_json, author=author_dict, **error_embed_args)
+                    error_dict = {
+                        "log token": log_item.message_token,
+                    }
+                    await log_error(bot=self.bot, content="Could not check for streams that were live. Result is not okay.", d=error_dict, author=author_dict, **error_embed_args)
                     return
 
                 if result_json["_total"] == 0:
@@ -114,8 +124,15 @@ class Tasks:
                                     live_notification = live_notifications.filter(success=False)[0]
                                 self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
-            print("{}\n{}".format(logify_exception_info(), e))
-            log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}".format(logify_exception_info(), e))
+            log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}\n".format(logify_exception_info(), e))
+            try:
+                for key in result.headers:
+                    value = result.headers[key]
+                    log_item.message += "{}: {}\n".format(key, value)
+            except:
+                pass
+            finally:
+                log_item.save()
             app_info = await self.bot.application_info()
 
             error_embed_args = {
