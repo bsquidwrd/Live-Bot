@@ -6,6 +6,7 @@ import requests
 import copy
 
 import web.wsgi
+from django.utils import timezone
 from livebot.models import *
 from allauth.socialaccount.models import SocialApp
 from livebot.utils import logify_dict, logify_exception_info
@@ -33,6 +34,33 @@ class LiveBot:
             # await ctx.send(error)
             Log.objects.create(message="Error running command: {0.command}\n{1}".format(ctx, error))
 
+    @commands.group(name="list")
+    @checks.is_mod()
+    @checks.is_guild_channel()
+    async def list_command(self, ctx):
+        """
+        Lists the twitch channels being monitored for the specific guild
+        """
+        guild = DiscordGuild.objects.get_or_create(id=ctx.author.guild.id)[0]
+        guild_channels = DiscordChannel.objects.filter(guild=guild)
+        notifications = TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[c.id for c in guild_channels])
+
+        channel_notifications = []
+        for notification in notifications:
+            if notification.twitch.name not in channel_notifications:
+                channel_notifications.append(notification.twitch.name)
+
+        embed_args = {
+            "title": "Stream monitoring for {}".format(ctx.author.guild.name),
+            "description": "\n".join(channel_notifications),
+            "colour": discord.Colour.dark_purple(),
+            "timestamp": timezone.now(),
+        }
+        embed = discord.Embed(**embed_args)
+
+        await ctx.send(content="The following channels are being monitored for this server:\n", embed=embed)
+
+
     @commands.group(name="monitor")
     @checks.is_mod()
     @checks.is_guild_channel()
@@ -41,7 +69,6 @@ class LiveBot:
         The base command to all the functions I perform.
         See the help page for this command to learn more.
         """
-        print(type(ctx.channel))
         if ctx.invoked_subcommand is None:
             msg = copy.copy(ctx.message)
             msg.content = "{} help monitor".format(self.bot.user.mention)
