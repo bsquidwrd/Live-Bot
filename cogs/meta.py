@@ -123,7 +123,7 @@ class Meta:
         """
         Update the bot Avatar
         """
-        path = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], 'avatar.png')
+        path = os.path.join('avatar.png')
         try:
             os.remove(path)
         except:
