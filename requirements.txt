@@ -1,6 +1,7 @@
 git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
 Django==1.11.5
 django-allauth==0.33.0
+raven==6.2.1
 requests==2.18.4
 requests-oauthlib==0.8.0
 python-dateutil==2.6.1
