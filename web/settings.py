@@ -218,7 +218,7 @@ MESSAGE_TAGS = {
 
 RAVEN_CONFIG = {
     'dsn': os.getenv('LIVE_BOT_RAVEN_URL', None),
-    'release': raven.fetch_git_sha(os.path.dirname(os.pardir)),
+    'release': raven.fetch_git_sha(BASE_DIR),
 }
 
 ##########################
