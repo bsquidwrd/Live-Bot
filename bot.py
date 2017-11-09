@@ -88,7 +88,6 @@ class LiveBot(commands.AutoShardedBot):
 
     async def process_commands(self, message):
         try:
-            importlib.reload(web.environment)
             importlib.reload(utils)
         except Exception as e:
             print(e)
