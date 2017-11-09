@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import raven
+# import raven
 try:
     import web.environment
 except:
@@ -103,7 +103,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.twitch',
     'allauth.socialaccount.providers.discord',
-    'raven.contrib.django.raven_compat',
+    # 'raven.contrib.django.raven_compat',
     'livebot',
 ]
 
@@ -216,10 +216,10 @@ MESSAGE_TAGS = {
     message_constants.ERROR: 'danger',
 }
 
-RAVEN_CONFIG = {
-    'dsn': os.getenv('LIVE_BOT_RAVEN_URL', None),
-    'release': raven.fetch_git_sha(BASE_DIR),
-}
+# RAVEN_CONFIG = {
+#     'dsn': os.getenv('LIVE_BOT_RAVEN_URL', None),
+#     'release': raven.fetch_git_sha(BASE_DIR),
+# }
 
 ##########################
 # End my custom settings #
