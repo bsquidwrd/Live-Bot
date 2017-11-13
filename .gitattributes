@@ -1,11 +1,11 @@
-static/Flat-UI/* linguist-vendored
-static/admin/* linguist-vendored
-static/css/spinners.css linguist-vendored
-static/css/loader.css linguist-vendored
-static/css/loader.min.css linguist-vendored
-static/js/konami.js linguist-vendored
-static/js/konami.min.js linguist-vendored
-static/js/jquery.maskedinput.min.js linguist-vendored
+livebot/static/Flat-UI/* linguist-vendored
+livebot/static/admin/* linguist-vendored
+livebot/static/css/spinners.css linguist-vendored
+livebot/static/css/loader.css linguist-vendored
+livebot/static/css/loader.min.css linguist-vendored
+livebot/static/js/konami.js linguist-vendored
+livebot/static/js/konami.min.js linguist-vendored
+livebot/static/js/jquery.maskedinput.min.js linguist-vendored
 
 # Auto detect text files and perform LF normalization
 * text=auto
