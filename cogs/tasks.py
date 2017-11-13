@@ -75,7 +75,7 @@ class Tasks:
                 try:
                     result_json = await result.json()
                 except Exception as e:
-                    raise Exception("Could not parse JSON from response. Got:")#\n{}".format(await result.text()))
+                    raise Exception("Could not parse JSON from response.")
                 if not result.status == 200:
                     log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}".format(logify_dict(result_json)))
                     try:
@@ -115,6 +115,7 @@ class Tasks:
                             live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
                             for notification in twitch.twitchnotification_set.all():
                                 live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
+                                last_notification = Notification.objects.filter(content_type=notification.content_type, object_id=notification.object_id, live__twitch=twitch, success=True).order_by('-live__timestamp')[0]
                                 if live_notifications.filter(success=True).count() >= 1:
                                     continue
                                 if live_notifications.filter(success=False).count() == 0:
@@ -122,7 +123,13 @@ class Tasks:
                                     live_notification = Notification.objects.create(live=live, content_type=notification.content_type, object_id=notification.object_id, success=False, log=log)
                                 else:
                                     live_notification = live_notifications.filter(success=False)[0]
-                                self.bot.loop.create_task(self.alert(stream, notification, live_notification))
+
+                                notification_timedelta = (live_notification.live.timestamp - last_notification.live.timestamp)
+                                if notification_timedelta.seconds <= 3600:
+                                    live_notification.success = True
+                                    live_notification.save()
+                                else:
+                                    self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
             log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}\n".format(logify_exception_info(), e))
             try:
