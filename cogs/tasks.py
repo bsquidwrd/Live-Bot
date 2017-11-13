@@ -115,7 +115,7 @@ class Tasks:
                             live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
                             for notification in twitch.twitchnotification_set.all():
                                 live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
-                                last_notification = Notification.objects.filter(content_type=notification.content_type, object_id=notification.object_id, live__twitch=twitch, success=True).order_by('-live__timestamp')[0]
+                                last_notification = Notification.objects.filter(content_type=notification.content_type, object_id=notification.object_id, live__twitch=twitch, success=True).order_by('-live__timestamp')
                                 if live_notifications.filter(success=True).count() >= 1:
                                     continue
                                 if live_notifications.filter(success=False).count() == 0:
@@ -124,10 +124,13 @@ class Tasks:
                                 else:
                                     live_notification = live_notifications.filter(success=False)[0]
 
-                                notification_timedelta = (live_notification.live.timestamp - last_notification.live.timestamp)
-                                if notification_timedelta.seconds <= 3600:
-                                    live_notification.success = True
-                                    live_notification.save()
+                                if last_notification.count() >= 1:
+                                    notification_timedelta = (live_notification.live.timestamp - last_notification[0].live.timestamp)
+                                    if notification_timedelta.seconds <= 3600:
+                                        live_notification.success = True
+                                        live_notification.save()
+                                    else:
+                                        self.bot.loop.create_task(self.alert(stream, notification, live_notification))
                                 else:
                                     self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
