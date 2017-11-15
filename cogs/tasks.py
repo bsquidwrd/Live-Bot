@@ -110,8 +110,9 @@ class Tasks:
                 for stream in result_json['streams']:
                     if stream is not None:
                         if stream['stream_type'] == 'live':
-                            twitch, created = TwitchChannel.objects.get_or_create(id=stream['channel']['_id'], defaults={'name': stream['channel']['name']})
+                            twitch, created = TwitchChannel.objects.get_or_create(id=stream['channel']['_id'])
                             if created:
+                                twitch.name = stream['channel']['name']
                                 twitch.save()
                             timestamp = parse(stream['created_at'])
                             live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
