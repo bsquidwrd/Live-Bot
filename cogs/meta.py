@@ -114,7 +114,7 @@ class Meta:
             while not self.bot.is_ready():
                 await asyncio.sleep(1)
             while not self.bot.is_closed():
-                await self.update_avatar()
+                # await self.update_avatar()
                 await asyncio.sleep(3600)
         except asyncio.CancelledError as e:
             pass

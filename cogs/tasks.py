@@ -110,7 +110,10 @@ class Tasks:
                 for stream in result_json['streams']:
                     if stream is not None:
                         if stream['stream_type'] == 'live':
-                            twitch = TwitchChannel.objects.get(id=stream['channel']['_id'])
+                            twitch, created = TwitchChannel.objects.get_or_create(id=stream['channel']['_id'])
+                            if created:
+                                twitch.name = stream['channel']['name']
+                                twitch.save()
                             timestamp = parse(stream['created_at'])
                             live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
                             for notification in twitch.twitchnotification_set.all():
