@@ -9,6 +9,7 @@ config/*
 environment.py
 testing.py
 avatar.*
+ngrok.exe
 
 # Python .gitignore info
 # Byte-compiled / optimized / DLL files
