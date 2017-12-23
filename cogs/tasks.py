@@ -133,9 +133,9 @@ class Tasks:
                                         live_notification.success = True
                                         live_notification.save()
                                     else:
-                                        self.bot.loop.create_task(self.alert(stream, notification, live_notification))
+                                        await self.alert(stream, notification, live_notification)
                                 else:
-                                    self.bot.loop.create_task(self.alert(stream, notification, live_notification))
+                                    await self.alert(stream, notification, live_notification)
         except Exception as e:
             log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}\n".format(logify_exception_info(), e))
             try:
