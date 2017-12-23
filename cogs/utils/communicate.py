@@ -33,5 +33,7 @@ class Twitter:
                 'status': message,
             }
             r = twitter.post(self.url, params=tweet_params)
+            return r.json()
         except Exception as e:
             self.log("Error tweeting", logify_exception_info(), e)
+            return None

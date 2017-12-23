@@ -133,9 +133,9 @@ class Tasks:
                                         live_notification.success = True
                                         live_notification.save()
                                     else:
-                                        await self.alert(stream, notification, live_notification)
+                                        self.bot.loop.create_task(self.alert(stream, notification, live_notification))
                                 else:
-                                    await self.alert(stream, notification, live_notification)
+                                    self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
             log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}\n".format(logify_exception_info(), e))
             try:
@@ -199,17 +199,22 @@ class Tasks:
                     embed.set_footer(text="Stream start time")
                     if not live_notification.success:
                         try:
-                            await channel.send("{}".format(message), embed=embed)
+                            msg = await channel.send("{}".format(message), embed=embed)
+                            if msg.content == message:
+                                log.message += "Notification success"
+                                live_notification.success = True
+                                live_notification.save()
                         except Exception as e:
                             raise Exception("Unable to send a message to channel ID {} in guild id {} for stream ID {}\nLine number {}\n{}".format(channel.id, channel.guild.id, twitch.id, current_line(), e))
 
             elif notification.content_type == twitter_content_type:
                 twitter = communicate.Twitter(log=log, uid=notification.object_id)
                 if not live_notification.success:
-                    twitter.tweet('{} {}'.format(message[:115], twitch.url))
-            log.message += "Notification success"
-            live_notification.success = True
-            live_notification.save()
+                    tweet = twitter.tweet('{} {}'.format(message[:115], twitch.url))
+                    if tweet:
+                        log.message += "Notification success"
+                        live_notification.success = True
+                        live_notification.save()
 
         except Exception as e:
             log.message += "Error notifying service:\n{}\n{}".format(logify_exception_info(), e)
