@@ -200,26 +200,26 @@ class Tasks:
                     if not live_notification.success:
                         try:
                             msg = await channel.send("{}".format(message), embed=embed)
-                            if msg.content == message:
-                                log.message += "Notification success"
-                                live_notification.success = True
-                                live_notification.save()
                         except Exception as e:
                             raise Exception("Unable to send a message to channel ID {} in guild id {} for stream ID {}\nLine number {}\n{}".format(channel.id, channel.guild.id, twitch.id, current_line(), e))
+                        if msg.content == message:
+                            log.message += "Notification success\n"
+                            log.save()
+                            live_notification.success = True
+                            live_notification.save()
 
             elif notification.content_type == twitter_content_type:
                 twitter = communicate.Twitter(log=log, uid=notification.object_id)
                 if not live_notification.success:
                     tweet = twitter.tweet('{} {}'.format(message[:115], twitch.url))
                     if tweet:
-                        log.message += "Notification success"
+                        log.message += "Notification success\n"
+                        log.save()
                         live_notification.success = True
                         live_notification.save()
 
         except Exception as e:
-            log.message += "Error notifying service:\n{}\n{}".format(logify_exception_info(), e)
-        finally:
-            log.message += "\n\n"
+            log.message += "Error notifying service:\n{}\n{}\n\n".format(logify_exception_info(), e)
             log.save()
 
 
