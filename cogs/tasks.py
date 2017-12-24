@@ -221,6 +221,9 @@ class Tasks:
                         log.message += "Tweet not sent, not marking as success and will try again\n"
                 else:
                     log.message += "Notification already marked as success, skipping\n"
+            else:
+                log.message += "Could not determine notification type, assuming success\n"
+                live_notification.success = True
 
         except Exception as e:
             log.message += "Error notifying service:\n{}\n{}\n\n".format(logify_exception_info(), e)
