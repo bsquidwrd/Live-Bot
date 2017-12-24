@@ -68,12 +68,11 @@ else:
             'PORT': os.getenv('LIVE_BOT_DATABASE_PORT', None)
         }
     }
-
-try:
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.config(conn_max_age=600)
-except:
-    pass
+    try:
+        import dj_database_url
+        DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+    except:
+        pass
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
