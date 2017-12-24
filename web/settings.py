@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-# import raven
 try:
     import web.environment
 except:
@@ -103,7 +102,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.twitter',
     'allauth.socialaccount.providers.twitch',
     'allauth.socialaccount.providers.discord',
-    'raven.contrib.django.raven_compat',
     'livebot',
 ]
 
