@@ -40,7 +40,7 @@ class DiscordGuild(models.Model):
 class DiscordChannel(models.Model):
     id = models.BigIntegerField(primary_key=True, verbose_name='Channel ID')
     name = models.CharField(max_length=255, verbose_name='Channel Name')
-    guild = models.ForeignKey(DiscordGuild, verbose_name='Channel Guild')
+    guild = models.ForeignKey(DiscordGuild, verbose_name='Channel Guild', on_delete=models.CASCADE)
 
     def __str__(self):
         return '{}'.format(self.name)
@@ -90,7 +90,7 @@ class TwitchNotification(models.Model):
     This is where users will store what DiscordChannel or Twitter or
     anything else they want notified when they go live
     """
-    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
+    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel', on_delete=models.CASCADE)
     limit = models.Q(app_label = 'livebot')
     content_type = models.ForeignKey(ContentType, limit_choices_to=limit, on_delete=models.CASCADE)
     object_id = models.BigIntegerField()
@@ -124,7 +124,7 @@ class TwitchNotification(models.Model):
 
 
 class TwitchLive(models.Model):
-    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel')
+    twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel', on_delete=models.CASCADE)
     timestamp = models.DateTimeField()
 
     def __str__(self):
@@ -150,8 +150,8 @@ class Notification(models.Model):
 
     This is meant to be the area to store notification results (whether success or not) when they go live
     """
-    log = models.ForeignKey('Log', verbose_name='Log Item')
-    live = models.ForeignKey(TwitchLive, verbose_name='Twitch Live')
+    log = models.ForeignKey('Log', verbose_name='Log Item', on_delete=models.CASCADE)
+    live = models.ForeignKey(TwitchLive, verbose_name='Twitch Live', on_delete=models.CASCADE)
     limit = models.Q(app_label = 'livebot')
     content_type = models.ForeignKey(ContentType, limit_choices_to=limit, on_delete=models.CASCADE)
     object_id = models.BigIntegerField()
