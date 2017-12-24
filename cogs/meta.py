@@ -21,7 +21,7 @@ class Meta:
         self.bot = bot
         bot.remove_command('help')
         bot.loop.create_task(self.update_presence())
-        self._task = bot.loop.create_task(self.run_tasks())
+        # self._task = bot.loop.create_task(self.run_tasks())
 
     def __unload(self):
         self._task.cancel()
@@ -114,7 +114,7 @@ class Meta:
             while not self.bot.is_ready():
                 await asyncio.sleep(1)
             while not self.bot.is_closed():
-                # await self.update_avatar()
+                await self.update_avatar()
                 await asyncio.sleep(3600)
         except asyncio.CancelledError as e:
             pass
