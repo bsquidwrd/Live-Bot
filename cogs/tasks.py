@@ -164,7 +164,7 @@ class Tasks:
             }
             await log_error(bot=self.bot, content="Something went wrong when trying to run through the tasks.", d=error_info, author=author_dict, **error_embed_args)
 
-    async def alert(self, stream, notification, live_notification):
+    async def alert(self, stream : dict, notification : TwitchNotification, live_notification: Notification):
         discord_content_type = DiscordChannel.get_content_type()
         twitter_content_type = Twitter.get_content_type()
         try:
@@ -204,9 +204,11 @@ class Tasks:
                             raise Exception("Unable to send a message to channel ID {} in guild id {} for stream ID {}\nLine number {}\n{}".format(channel.id, channel.guild.id, twitch.id, current_line(), e))
                         if msg.content == message:
                             log.message += "Notification success\n"
-                            log.save()
                             live_notification.success = True
-                            live_notification.save()
+                        else:
+                            log.message += "Message content did not equal expected content, will try again\n"
+                    else:
+                        log.message += "Notification already marked as success, skipping\n"
 
             elif notification.content_type == twitter_content_type:
                 twitter = communicate.Twitter(log=log, uid=notification.object_id)
@@ -214,13 +216,17 @@ class Tasks:
                     tweet = twitter.tweet('{} {}'.format(message[:115], twitch.url))
                     if tweet:
                         log.message += "Notification success\n"
-                        log.save()
                         live_notification.success = True
-                        live_notification.save()
+                    else:
+                        log.message += "Tweet not sent, not marking as success and will try again\n"
+                else:
+                    log.message += "Notification already marked as success, skipping\n"
 
         except Exception as e:
             log.message += "Error notifying service:\n{}\n{}\n\n".format(logify_exception_info(), e)
-            log.save()
+
+        log.save()
+        live_notification.save()
 
 
 def setup(bot):
