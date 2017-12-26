@@ -23,9 +23,8 @@ class Meta:
         bot.loop.create_task(self.update_presence())
         # self._task = bot.loop.create_task(self.run_tasks())
 
-    def __unload(self):
-        if getattr(self, '_task', None):
-            self._task.cancel()
+    # def __unload(self):
+    #     self._task.cancel()
 
     async def __error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
