@@ -128,8 +128,8 @@ class Tasks:
                                     live_notification = live_notifications.filter(success=False)[0]
 
                                 if last_notification.count() >= 1:
-                                    notification_timedelta = (live_notification.live.timestamp - last_notification[0].live.timestamp)
-                                    if notification_timedelta.seconds <= 3600:
+                                    notification_timedelta = (live_notification.live.timestamp - last_notification[0].live.timestamp).seconds
+                                    if notification_timedelta <= 3600:
                                         log.message += "Stream went live within an hour of their last live instance, marking as success. Timedelta: {}".format(notification_timedelta)
                                         live_notification.success = True
                                         log.save()
