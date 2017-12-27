@@ -20,7 +20,6 @@ class Meta:
     def __init__(self, bot):
         self.bot = bot
         bot.remove_command('help')
-        bot.loop.create_task(self.update_presence())
         # self._task = bot.loop.create_task(self.run_tasks())
 
     # def __unload(self):
@@ -29,12 +28,6 @@ class Meta:
     async def __error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send(error)
-
-    async def update_presence(self):
-        while not self.bot.is_ready():
-            await asyncio.sleep(1)
-        live_bot_game = discord.Game(name='@me help', url=self.bot.github_url, type=0)
-        await self.bot.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
 
     @commands.command(name='help')
     async def _help(self, ctx, *, command: str = None):
