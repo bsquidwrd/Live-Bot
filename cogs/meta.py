@@ -58,6 +58,11 @@ class Meta:
         await ctx.send('Hello! I\'m a robot! {0.name}#{0.discriminator} made me.'.format(app_info.owner))
 
     @commands.command()
+    async def donate(self, ctx):
+        """Get a link to donate to me if you'd like to help support this project!"""
+        await ctx.send('Thank you so much for even considering donating! You can donate here: <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XYSMT6V7TGE5S>')
+
+    @commands.command()
     async def source(self, ctx, *, command: str = None):
         """Displays my full source code or for a specific command.
         To display the source code of a subcommand you can separate it by
