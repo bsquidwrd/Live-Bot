@@ -9,6 +9,8 @@ I'd prefer if only my instance was running so the bot and users don't get confus
 
 [Click here to have the bot added to your server](https://discordapp.com/oauth2/authorize?client_id=334870738257444865&scope=bot&permissions=519248)
 
+<img src="https://i.imgur.com/3zjjOnQ.gif" />
+
 
 ## Requirements
 - Python 3.6+
