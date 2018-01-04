@@ -17,4 +17,4 @@ I'd prefer if only my instance was running so the bot and users don't get confus
 - Async version of discord.py
 
 ## Thanks
-- [Rapptz](https://github.com/Rapptz) and his amazing work on [Discord.py](https://github.com/Rapptz/discord.py) combined with the code I used as a template [RoboDanny](https://github.com/Rapptz/RoboDanny)
+- [Rapptz](https://github.com/Rapptz) and his amazing work on [Discord.py](https://github.com/Rapptz/discord.py/tree/rewrite) combined with the code I used as a template [RoboDanny](https://github.com/Rapptz/RoboDanny/tree/rewrite)
