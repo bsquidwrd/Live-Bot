@@ -86,7 +86,6 @@ class Tasks:
                         pass
                     finally:
                         log_item.save()
-                    app_info = await self.bot.application_info()
                     error_embed_args = {
                         'title': "Error Running Tasks",
                         'description': "Could not retrieve list of streams that are benig monitored.",
@@ -95,7 +94,6 @@ class Tasks:
                     }
                     author_dict = {
                         'name': self.bot.user.name,
-                        'icon_url': app_info.icon_url,
                     }
                     error_dict = {
                         "log token": log_item.message_token,
@@ -148,7 +146,6 @@ class Tasks:
                 pass
             finally:
                 log_item.save()
-            app_info = await self.bot.application_info()
 
             error_embed_args = {
                 'title': "Error Running Tasks",
@@ -158,7 +155,6 @@ class Tasks:
             }
             author_dict = {
                 'name': self.bot.user.name,
-                'icon_url': app_info.icon_url,
             }
             error_info = {
                 "exception": str(e),
@@ -180,7 +176,6 @@ class Tasks:
                 if channel is None:
                     raise Exception("Bot returned None for Channel ID {}\n".format(notification.object_id))
                 else:
-                    app_info = await self.bot.application_info()
                     embed_args = {
                         # 'title': stream['channel']['display_name'],
                         'description': stream['channel']['status'],
@@ -189,7 +184,7 @@ class Tasks:
                         'timestamp': timestamp,
                     }
                     embed = discord.Embed(**embed_args)
-                    embed.set_author(name=stream['channel']['display_name'], icon_url=app_info.icon_url)
+                    embed.set_author(name=stream['channel']['display_name'])
                     if stream['channel']['logo'] and stream['channel']['logo'] != "":
                         embed.set_thumbnail(url=stream['channel']['logo'])
                     game_name = stream['game']
