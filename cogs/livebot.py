@@ -286,7 +286,7 @@ class LiveBot:
                     await response_message.delete()
                 except:
                     pass
-                raise Exception("Result status was not okay: \n{}".format(result.text))
+                # raise Exception("Result status was not okay: \n{}".format(result.text))
 
         except asyncio.TimeoutError as te:
             await ctx.send("{} It looks like you took too long to respond. Please run the command again if you wish to continue.".format(ctx.author.mention))
