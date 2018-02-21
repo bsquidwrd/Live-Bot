@@ -24,7 +24,7 @@ class LiveBot:
     def __init__(self, bot):
         self.bot = bot
         self.author = None
-        self.TWITCH_USER_URL = "https://api.twitch.tv/kraken/users/{username}"
+        self.TWITCH_USER_URL = "https://api.twitch.tv/helix/users?login={username}"
 
     async def on_ready(self):
         pass
@@ -33,6 +33,7 @@ class LiveBot:
         if isinstance(error, commands.BadArgument):
             # await ctx.send(error)
             Log.objects.create(message="Error running command: {0.command}\n{1}".format(ctx, error))
+
 
     @commands.group(name="list")
     @checks.is_mod()
@@ -98,11 +99,14 @@ class LiveBot:
             }
             result = requests.get(url=self.TWITCH_USER_URL.format(username=response_message.clean_content), headers=headers)
             if result.status_code == requests.codes.ok:
-                result = result.json()
-                twitch_channel = TwitchChannel.objects.get_or_create(id=result['_id'])[0]
+                result = result.json()['data'][0]
+                twitch_channel = TwitchChannel.objects.get_or_create(id=result['id'])[0]
                 try:
                     # Update twitch channel name, just in case it's different in my database
-                    twitch_channel.name = result['name']
+                    twitch_channel.name = result['login']
+                    twitch_channel.display_name = result['display_name']
+                    twitch_channel.profile_image = result['profile_image_url']
+                    twitch_channel.offline_image = result['offline_image_url']
                     twitch_channel.save()
                 except:
                     pass
@@ -113,14 +117,14 @@ class LiveBot:
                     pass
 
                 wait_message_args = {
-                    'title': result['display_name'],
-                    'description': result['bio'],
-                    'url': "https://twitch.tv/{}".format(result['name']),
+                    'title': twitch_channel.display_name,
+                    'description': result['description'],
+                    'url': twitch_channel.url,
                     'colour': discord.Colour.dark_purple(),
                 }
                 wait_message_embed = discord.Embed(**wait_message_args)
-                if result['logo']:
-                    wait_message_embed.set_thumbnail(url=result['logo'])
+                if twitch_channel.profile_image:
+                    wait_message_embed.set_thumbnail(url=twitch_channel.profile_image)
                 wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
                 wait_message_embed.set_footer(text="Please type YES or NO")
                 wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
@@ -186,7 +190,7 @@ class LiveBot:
                 if response_message.content.lower() == "default":
                     message_for_notification = "{name} is live and is playing {game}! {url}"
                 elif len(response_message.clean_content) + char_count > 255:
-                    await ctx.send("{0.author.mention}: The message you type was too long. Please type run the command again with a shorter message".format(ctx), delete_after=30.0)
+                    await ctx.send("{0.author.mention}: The message you type was too long. Please run the command again with a shorter message".format(ctx), delete_after=30.0)
                     raise UserCancelled
                 else:
                     message_for_notification = response_message.clean_content
@@ -266,8 +270,8 @@ class LiveBot:
                             'colour': discord.Colour.dark_purple(),
                         }
                         embed = discord.Embed(**embed_args)
-                        if result['logo']:
-                            embed.set_thumbnail(url=result['logo'])
+                        if twitch_channel.profile_image:
+                            embed.set_thumbnail(url=twitch_channel.profile_image)
                         embed.add_field(name="Notify everyone?", value=str(mention_everyone), inline=True)
                         embed.add_field(name="Message", value=message_for_notification, inline=True)
                         embed.add_field(name="Channels", value=added_channels_message, inline=False)
@@ -277,7 +281,6 @@ class LiveBot:
                         await ctx.send("{0.author.mention}".format(ctx), embed=embed, delete_after=60.0)
 
                     if len(added_channels) == 0 and len(no_perms_channels) == 0:
-
                         await ctx.send("{0.author.mention}: It looks like I wasn't able to understand the channels you provided me or add a notification for them. If this continues to happen, please use the support command to notify my owner.", delete_after=60.0)
 
             else:
@@ -345,16 +348,24 @@ class LiveBot:
             }
             result = requests.get(url=self.TWITCH_USER_URL.format(username=response_message.clean_content), headers=headers)
             if result.status_code == requests.codes.ok:
-                result = result.json()
+                try:
+                    twitch_channel.name = result['login']
+                    twitch_channel.display_name = result['display_name']
+                    twitch_channel.profile_image = result['profile_image_url']
+                    twitch_channel.offline_image = result['offline_image_url']
+                    twitch_channel.save()
+                except:
+                    pass
+                result = result.json()['data'][0]
                 wait_message_args = {
-                    'title': result['display_name'],
-                    'description': result['bio'],
-                    'url': "https://twitch.tv/{}".format(result['name']),
+                    'title': twitch_channel.display_name,
+                    'description': result['description'],
+                    'url': twitch_channel.url,
                     'colour': discord.Colour.dark_purple(),
                 }
                 wait_message_embed = discord.Embed(**wait_message_args)
-                if result['logo']:
-                    wait_message_embed.set_thumbnail(url=result['logo'])
+                if twitch_channel.profile_image:
+                    wait_message_embed.set_thumbnail(url=twitch_channel.profile_image)
                 wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
                 wait_message_embed.set_footer(text="Please type YES or NO")
                 wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
@@ -424,8 +435,8 @@ class LiveBot:
                 'colour': discord.Colour.dark_purple(),
             }
             embed = discord.Embed(**embed_args)
-            if result['logo']:
-                embed.set_thumbnail(url=result['logo'])
+            if twitch_channel.profile_image:
+                embed.set_thumbnail(url=twitch_channel.profile_image)
             embed.add_field(name="Channels", value=", ".join(notifications_deleted), inline=False)
             app_info = await self.bot.application_info()
             avatar = app_info.owner.default_avatar_url if not app_info.owner.avatar else app_info.owner.avatar_url

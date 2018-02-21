@@ -10,9 +10,15 @@ from cogs.utils import logify_exception_info
 class TwitchChannel(models.Model):
     id = models.BigIntegerField(primary_key=True, verbose_name='Channel ID')
     name = models.CharField(max_length=255, verbose_name='Channel Name')
+    display_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Channel Display Name')
+    profile_image = models.URLField(blank=True, null=True, verbose_name="Profile Image URL")
+    offline_image = models.URLField(blank=True, null=True, verbose_name="Offline Image URL")
 
     def __str__(self):
-        return '{}'.format(self.name)
+        if self.display_name is None or self.display_name == "":
+            return str(self.name)
+        else:
+            return str(self.display_name)
 
     @property
     def url(self):

@@ -26,6 +26,7 @@ class Tasks:
         self.bot = bot
         self.twitch_app = SocialApp.objects.get_current('twitch')
         self._task = bot.loop.create_task(self.run_tasks())
+        self._update_twitch_channels_task = bot.loop.create_task(self.run_update_twitch_channels())
         try:
             importlib.reload(communicate)
         except Exception as e:
@@ -33,6 +34,7 @@ class Tasks:
 
     def __unload(self):
         self._task.cancel()
+        self._update_twitch_channels_task.cancel()
 
     async def on_ready(self):
         """
@@ -49,29 +51,58 @@ class Tasks:
             while not self.bot.is_closed():
                 await self.run_scheduled_tasks()
                 await asyncio.sleep(60)
-        except asyncio.CancelledError as e:
+        except asyncio.CancelledError:
             pass
+    
+    async def run_update_twitch_channels(self):
+        try:
+            while not self.bot.is_ready():
+                await asyncio.sleep(1)
+            while not self.bot.is_closed():
+                await self.update_twitch_channels()
+                await asyncio.sleep(3600)
+        except asyncio.CancelledError:
+            pass
+    
+    async def update_twitch_channels(self):
+        headers = {
+            'Client-ID': self.twitch_app.client_id,
+        }
+        base_url = 'https://api.twitch.tv/helix/users'
+        twitch_channels = TwitchChannel.objects.all()
+        for channels in grouper(twitch_channels, 100):
+            payload = []
+            for c in channels:
+                if c:
+                    payload.append(('id', str(c.id)))
+                response = await self.bot.session.get(base_url, headers=headers, params=payload)
+                data = await response.json()
+                for item in data['data']:
+                    c.name = item['login']
+                    c.display_name = item['display_name']
+                    c.profile_image = item['profile_image_url']
+                    c.offline_image = item['offline_image_url']
+                    c.save()
 
     async def run_scheduled_tasks(self):
         try:
             result = None
             twitch_notifications = defaultdict(list)
             for n in TwitchNotification.objects.all():
-                twitch_notifications[n.twitch.name].append(n)
+                twitch_notifications[n.twitch].append(n)
 
             headers = {
                 'Client-ID': self.twitch_app.client_id,
             }
 
             for notifications in grouper(twitch_notifications, 100):
-                stream_names = []
+                payload = [('type', 'live')]
                 for v in notifications:
                     # Because it can be None
                     if v:
-                        stream_names.append(v)
-                channels_appended = ",".join(stream_names)
+                        payload.append(('user_id', str(v.id)))
 
-                result = await self.bot.session.get("https://api.twitch.tv/kraken/streams/?channel={0}".format(channels_appended), headers=headers)
+                result = await self.bot.session.get("https://api.twitch.tv/helix/streams", headers=headers, params=payload)
                 try:
                     result_json = await result.json()
                 except Exception as e:
@@ -101,41 +132,49 @@ class Tasks:
                     await log_error(bot=self.bot, content="Could not check for streams that were live. Result is not okay.", d=error_dict, author=author_dict, **error_embed_args)
                     return
 
-                if result_json["_total"] == 0:
+                if len(result_json["data"]) == 0:
                     # No streams live right now, continue on
                     continue
 
-                for stream in result_json['streams']:
+                for stream in result_json['data']:
                     if stream is not None:
-                        if stream['stream_type'] == 'live':
-                            twitch, created = TwitchChannel.objects.get_or_create(id=stream['channel']['_id'])
-                            if created:
-                                twitch.name = stream['channel']['name']
-                                twitch.save()
-                            timestamp = parse(stream['created_at'])
-                            live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
-                            for notification in twitch.twitchnotification_set.all():
-                                live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
-                                last_notification = Notification.objects.filter(content_type=notification.content_type, object_id=notification.object_id, live__twitch=twitch, success=True).order_by('-live__timestamp')
-                                if live_notifications.filter(success=True).count() >= 1:
-                                    continue
-                                if live_notifications.filter(success=False).count() == 0:
-                                    log = Log.objects.create(message="Attempting to notify for {}\n".format(twitch.name))
-                                    live_notification = Notification.objects.create(live=live, content_type=notification.content_type, object_id=notification.object_id, success=False, log=log)
-                                else:
-                                    live_notification = live_notifications.filter(success=False)[0]
+                        twitch, created = TwitchChannel.objects.get_or_create(id=stream['user_id'])
+                        if created:
+                            r = await self.bot.session.get("https://api.twitch.tv/helix/users", headers=headers, params={'id': twitch.id})
+                            user_json = await r.json()
+                            twitch.name = user_json[0]['login']
+                            twitch.display_name = user_json[0]['display_name']
+                            twitch.save()
+                        timestamp = parse(stream['started_at'])
+                        g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=headers, params={'id': stream['game_id']})
+                        game_json = await g.json()
+                        try:
+                            game = game_json['data'][0]
+                        except:
+                            game = {'name': '[Not Set]'}
+                        live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
+                        for notification in twitch.twitchnotification_set.all():
+                            live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
+                            last_notification = Notification.objects.filter(content_type=notification.content_type, object_id=notification.object_id, live__twitch=twitch, success=True).order_by('-live__timestamp')
+                            if live_notifications.filter(success=True).count() >= 1:
+                                continue
+                            if live_notifications.filter(success=False).count() == 0:
+                                log = Log.objects.create(message="Attempting to notify for {}\n".format(twitch.name))
+                                live_notification = Notification.objects.create(live=live, content_type=notification.content_type, object_id=notification.object_id, success=False, log=log)
+                            else:
+                                live_notification = live_notifications.filter(success=False)[0]
 
-                                if last_notification.count() >= 1:
-                                    notification_timedelta = (live_notification.live.timestamp - last_notification[0].live.timestamp).total_seconds()
-                                    if notification_timedelta <= 3600:
-                                        log.message += "Stream went live within an hour of their last live instance, marking as success. Timedelta: {}".format(notification_timedelta)
-                                        live_notification.success = True
-                                        log.save()
-                                        live_notification.save()
-                                    else:
-                                        self.bot.loop.create_task(self.alert(stream, notification, live_notification))
+                            if last_notification.count() >= 1:
+                                notification_timedelta = (live_notification.live.timestamp - last_notification[0].live.timestamp).total_seconds()
+                                if notification_timedelta <= 3600:
+                                    log.message += "Stream went live within an hour of their last live instance, marking as success. Timedelta: {}".format(notification_timedelta)
+                                    live_notification.success = True
+                                    log.save()
+                                    live_notification.save()
                                 else:
-                                    self.bot.loop.create_task(self.alert(stream, notification, live_notification))
+                                    self.bot.loop.create_task(self.alert(stream, notification, live_notification, game))
+                            else:
+                                self.bot.loop.create_task(self.alert(stream, notification, live_notification, game))
         except Exception as e:
             log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}\n".format(logify_exception_info(), e))
             try:
@@ -162,14 +201,14 @@ class Tasks:
             }
             await log_error(bot=self.bot, content="Something went wrong when trying to run through the tasks.", d=error_info, author=author_dict, **error_embed_args)
 
-    async def alert(self, stream : dict, notification : TwitchNotification, live_notification: Notification):
+    async def alert(self, stream: dict, notification: TwitchNotification, live_notification: Notification, game: dict = {'name': '[Not Set]'}):
         discord_content_type = DiscordChannel.get_content_type()
         twitter_content_type = Twitter.get_content_type()
         try:
             twitch = notification.twitch
-            timestamp = parse(stream['created_at'])
+            timestamp = parse(stream['started_at'])
             log = live_notification.log
-            message = notification.get_message(name=stream['channel']['display_name'], game=stream['game'])
+            message = notification.get_message(name=twitch.display_name, game=game['name'])
 
             if notification.content_type == discord_content_type:
                 channel = self.bot.get_channel(int(notification.object_id))
@@ -177,19 +216,17 @@ class Tasks:
                     raise Exception("Bot returned None for Channel ID {}\n".format(notification.object_id))
                 else:
                     embed_args = {
-                        # 'title': stream['channel']['display_name'],
-                        'description': stream['channel']['status'],
+                        # 'title': stream['title'],
+                        'description': stream['title'],
                         'url': twitch.url,
                         'colour': discord.Colour.dark_purple(),
                         'timestamp': timestamp,
                     }
                     embed = discord.Embed(**embed_args)
-                    embed.set_author(name=stream['channel']['display_name'])
-                    if stream['channel']['logo'] and stream['channel']['logo'] != "":
-                        embed.set_thumbnail(url=stream['channel']['logo'])
-                    game_name = stream['game']
-                    if game_name is None or game_name == "":
-                        game_name = '[Not Set]'
+                    embed.set_author(name=twitch.display_name)
+                    if twitch.profile_image and twitch.profile_image != "":
+                        embed.set_thumbnail(url=twitch.profile_image)
+                    game_name = game['name']
                     embed.add_field(name="Game", value=game_name, inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])

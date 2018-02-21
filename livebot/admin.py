@@ -10,7 +10,7 @@ class GlobalAdmin(admin.ModelAdmin):
 @admin.register(TwitchChannel)
 class TwitchChannelAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'id')
-    search_fields = ['name', 'id']
+    search_fields = ['name', 'id', 'display_name']
 
 
 @admin.register(DiscordGuild)
