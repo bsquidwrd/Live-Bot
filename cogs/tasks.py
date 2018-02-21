@@ -26,7 +26,7 @@ class Tasks:
         self.bot = bot
         self.twitch_app = SocialApp.objects.get_current('twitch')
         self._task = bot.loop.create_task(self.run_tasks())
-        self._update_twitch_channels_task = bot.loop.create_task(self.run_update_twitch_channels())
+        # self._update_twitch_channels_task = bot.loop.create_task(self.run_update_twitch_channels())
         try:
             importlib.reload(communicate)
         except Exception as e:
@@ -34,7 +34,7 @@ class Tasks:
 
     def __unload(self):
         self._task.cancel()
-        self._update_twitch_channels_task.cancel()
+        # self._update_twitch_channels_task.cancel()
 
     async def on_ready(self):
         """
@@ -53,7 +53,7 @@ class Tasks:
                 await asyncio.sleep(60)
         except asyncio.CancelledError:
             pass
-    
+
     async def run_update_twitch_channels(self):
         try:
             while not self.bot.is_ready():
@@ -63,7 +63,7 @@ class Tasks:
                 await asyncio.sleep(3600)
         except asyncio.CancelledError:
             pass
-    
+
     async def update_twitch_channels(self):
         headers = {
             'Client-ID': self.twitch_app.client_id,
@@ -144,6 +144,8 @@ class Tasks:
                             user_json = await r.json()
                             twitch.name = user_json[0]['login']
                             twitch.display_name = user_json[0]['display_name']
+                            twitch.profile_image = user_json[0]['profile_image_url']
+                            twitch.offline_image = user_json[0]['offline_image_url']
                             twitch.save()
                         timestamp = parse(stream['started_at'])
                         g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=headers, params={'id': stream['game_id']})
