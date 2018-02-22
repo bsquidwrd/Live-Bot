@@ -6,6 +6,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from cogs.utils import logify_exception_info
 
+class TwitchGame(models.Model):
+    id = models.BigIntegerField(primary_key=True, verbose_name='Game ID')
+    name = models.CharField(max_length=255, verbose_name='Game Name')
+    box_art = models.URLField(blank=True, null=True, verbose_name="Game Box Art")
+
 
 class TwitchChannel(models.Model):
     id = models.BigIntegerField(primary_key=True, verbose_name='Channel ID')
