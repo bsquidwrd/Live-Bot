@@ -315,7 +315,7 @@ class LiveBot:
             pass
 
     @monitor_command.command(name="stop")
-    async def monitor_stop_command(self, ctx):
+    async def monitor_stop_command(self, ctx, *, channel_name : str = None):
         """
         Stop monitoring a channel for when they go live
         """
@@ -323,16 +323,18 @@ class LiveBot:
             return m.author.id == ctx.author.id
 
         try:
-            twitch_notifications = TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[d.id for d in DiscordChannel.objects.filter(guild__id=ctx.guild.id)])
-            wait_message_args = {
-                'description': "What stream should I stop monitoring for this server?",
-                'colour': discord.Colour.dark_purple(),
-            }
-            wait_message_embed = discord.Embed(**wait_message_args)
-            wait_message_embed.add_field(name="Channels", value=", ".join([tn.twitch.name for tn in twitch_notifications]), inline=False)
-            wait_message_embed.set_footer(text="Example: bsquidwrd")
-            wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
-            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+            if not channel_name:
+                twitch_notifications = TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[d.id for d in DiscordChannel.objects.filter(guild__id=ctx.guild.id)])
+                wait_message_args = {
+                    'description': "What stream should I stop monitoring for this server?",
+                    'colour': discord.Colour.dark_purple(),
+                }
+                wait_message_embed = discord.Embed(**wait_message_args)
+                wait_message_embed.add_field(name="Channels", value=", ".join([tn.twitch.name for tn in twitch_notifications]), inline=False)
+                wait_message_embed.set_footer(text="Example: bsquidwrd")
+                wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
+                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+                channel_name = response_message.clean_content
 
             try:
                 await wait_message.delete()
@@ -340,13 +342,13 @@ class LiveBot:
             except:
                 pass
 
-            twitch_channel = TwitchChannel.objects.get_or_create(name=response_message.clean_content)[0]
+            twitch_channel = TwitchChannel.objects.get_or_create(name=channel_name)[0]
             twitch_notifications = twitch_notifications.filter(twitch=twitch_channel)
             twitch_app = SocialApp.objects.get_current('twitch')
             headers = {
                 'Client-ID': twitch_app.client_id,
             }
-            result = requests.get(url=self.TWITCH_USER_URL.format(username=response_message.clean_content), headers=headers)
+            result = requests.get(url=self.TWITCH_USER_URL.format(username=twitch_channel.name), headers=headers)
             if result.status_code == requests.codes.ok:
                 try:
                     twitch_channel.name = result['login']
