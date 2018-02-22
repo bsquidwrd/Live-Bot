@@ -26,7 +26,6 @@ class Tasks:
         self.bot = bot
         self.twitch_app = SocialApp.objects.get_current('twitch')
         self._task = bot.loop.create_task(self.run_tasks())
-        # self._update_twitch_channels_task = bot.loop.create_task(self.run_update_twitch_channels())
         try:
             importlib.reload(communicate)
         except Exception as e:
@@ -34,7 +33,6 @@ class Tasks:
 
     def __unload(self):
         self._task.cancel()
-        # self._update_twitch_channels_task.cancel()
 
     async def on_ready(self):
         """
@@ -53,36 +51,6 @@ class Tasks:
                 await asyncio.sleep(60)
         except asyncio.CancelledError:
             pass
-
-    async def run_update_twitch_channels(self):
-        try:
-            while not self.bot.is_ready():
-                await asyncio.sleep(1)
-            while not self.bot.is_closed():
-                await self.update_twitch_channels()
-                await asyncio.sleep(3600)
-        except asyncio.CancelledError:
-            pass
-
-    async def update_twitch_channels(self):
-        headers = {
-            'Client-ID': self.twitch_app.client_id,
-        }
-        base_url = 'https://api.twitch.tv/helix/users'
-        twitch_channels = TwitchChannel.objects.all()
-        for channels in grouper(twitch_channels, 100):
-            payload = []
-            for c in channels:
-                if c:
-                    payload.append(('id', str(c.id)))
-                response = await self.bot.session.get(base_url, headers=headers, params=payload)
-                data = await response.json()
-                for item in data['data']:
-                    c.name = item['login']
-                    c.display_name = item['display_name']
-                    c.profile_image = item['profile_image_url']
-                    c.offline_image = item['offline_image_url']
-                    c.save()
 
     async def run_scheduled_tasks(self):
         try:
@@ -151,9 +119,10 @@ class Tasks:
                         g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=headers, params={'id': stream['game_id']})
                         game_json = await g.json()
                         try:
-                            game = game_json['data'][0]
+                            game = TwitchGame.objects.get_or_create(id=game_json['data'][0]['id'], defaults={
+                                                                    'name': game_json['data'][0]['name'], 'box_art': game_json['data'][0]['box_art_url']})[0]
                         except:
-                            game = {'name': '[Not Set]'}
+                            game = TwitchGame.objects.get_or_create(id=1, name='[Not Set]')[0]
                         live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
                         for notification in twitch.twitchnotification_set.all():
                             live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
@@ -203,14 +172,14 @@ class Tasks:
             }
             await log_error(bot=self.bot, content="Something went wrong when trying to run through the tasks.", d=error_info, author=author_dict, **error_embed_args)
 
-    async def alert(self, stream: dict, notification: TwitchNotification, live_notification: Notification, game: dict = {'name': '[Not Set]'}):
+    async def alert(self, stream: dict, notification: TwitchNotification, live_notification: Notification, game: TwitchGame = TwitchGame(id=1, name='[Not Set]')):
         discord_content_type = DiscordChannel.get_content_type()
         twitter_content_type = Twitter.get_content_type()
         try:
             twitch = notification.twitch
             timestamp = parse(stream['started_at'])
             log = live_notification.log
-            message = notification.get_message(name=twitch.display_name, game=game['name'])
+            message = notification.get_message(name=twitch.display_name, game=game.name)
 
             if notification.content_type == discord_content_type:
                 channel = self.bot.get_channel(int(notification.object_id))
@@ -228,8 +197,7 @@ class Tasks:
                     embed.set_author(name=twitch.display_name)
                     if twitch.profile_image and twitch.profile_image != "":
                         embed.set_thumbnail(url=twitch.profile_image)
-                    game_name = game['name']
-                    embed.add_field(name="Game", value=game_name, inline=True)
+                    embed.add_field(name="Game", value=game.name, inline=True)
                     embed.add_field(name="Stream", value=twitch.url, inline=True)
                     # embed.set_image(url=stream['preview']['medium'])
                     embed.set_footer(text="Stream start time")
