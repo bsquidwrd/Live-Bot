@@ -11,6 +11,13 @@ class TwitchGame(models.Model):
     name = models.CharField(max_length=255, verbose_name='Game Name')
     box_art = models.URLField(blank=True, null=True, verbose_name="Game Box Art")
 
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name = "Twitch Game"
+        verbose_name_plural = "Twitch Games"
+
 
 class TwitchChannel(models.Model):
     id = models.BigIntegerField(primary_key=True, verbose_name='Channel ID')

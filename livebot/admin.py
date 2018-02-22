@@ -7,6 +7,12 @@ class GlobalAdmin(admin.ModelAdmin):
     get_display_name.short_description = 'Display Name'
 
 
+@admin.register(TwitchGame)
+class TwitchGameAdmin(GlobalAdmin):
+    list_display = ('get_display_name', 'id')
+    search_fields = ['name', 'id']
+
+
 @admin.register(TwitchChannel)
 class TwitchChannelAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'id')

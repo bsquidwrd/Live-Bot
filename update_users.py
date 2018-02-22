@@ -31,18 +31,21 @@ async def update_twitch_channels():
                 payload.append(('id', str(c.id)))
         response = await session.get(base_url, headers=headers, params=payload)
         data = await response.json()
-        for item in data['data']:
-            twitch = TwitchChannel.objects.get_or_create(id=item['id'])[0]
-            data = {
-                'name': item['login'],
-                'display_name': item['display_name'],
-                'profile_image': item['profile_image_url'],
-                'offline_image': item['offline_image_url'],
-            }
-            new_twitch, save_obj = update_attribute(twitch, data)
-            if save_obj:
-                new_twitch.save()
-                print("Updated {}".format(new_twitch.name))
+        try:
+            for item in data['data']:
+                twitch = TwitchChannel.objects.get_or_create(id=item['id'])[0]
+                data = {
+                    'name': item['login'],
+                    'display_name': item['display_name'],
+                    'profile_image': item['profile_image_url'],
+                    'offline_image': item['offline_image_url'],
+                }
+                new_twitch, save_obj = update_attribute(twitch, data)
+                if save_obj:
+                    new_twitch.save()
+                    print("Updated {}".format(new_twitch.name))
+        except:
+            pass
 
 
 def update_attribute(obj, data):

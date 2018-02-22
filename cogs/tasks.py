@@ -116,12 +116,15 @@ class Tasks:
                             twitch.offline_image = user_json[0]['offline_image_url']
                             twitch.save()
                         timestamp = parse(stream['started_at'])
-                        g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=headers, params={'id': stream['game_id']})
-                        game_json = await g.json()
-                        try:
-                            game = TwitchGame.objects.get_or_create(id=game_json['data'][0]['id'], defaults={
-                                                                    'name': game_json['data'][0]['name'], 'box_art': game_json['data'][0]['box_art_url']})[0]
-                        except:
+                        if stream['game_id'] and stream['game_id'] != "":
+                            try:
+                                game = TwitchGame.objects.get(id=stream['game_id'])
+                            except TwitchGame.DoesNotExist:
+                                g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=headers, params={'id': stream['game_id']})
+                                game_json = await g.json()
+                                game_defaults = {'name': game_json['data'][0]['name'], 'box_art': game_json['data'][0]['box_art_url']}
+                                game = TwitchGame.objects.get_or_create(id=game_json['data'][0]['id'], defaults=game_defaults)[0]
+                        else:
                             game = TwitchGame.objects.get_or_create(id=1, name='[Not Set]')[0]
                         live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
                         for notification in twitch.twitchnotification_set.all():
