@@ -10,6 +10,7 @@ environment.py
 testing.py
 avatar.*
 ngrok.exe
+*.code-workspace
 
 # Python .gitignore info
 # Byte-compiled / optimized / DLL files
