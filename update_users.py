@@ -42,7 +42,7 @@ async def update_twitch_channels():
             new_twitch, save_obj = update_attribute(twitch, data)
             if save_obj:
                 new_twitch.save()
-                print("Updated {}".format(new_twitch.display_name))
+                print("Updated {}".format(new_twitch.name))
 
 
 def update_attribute(obj, data):
