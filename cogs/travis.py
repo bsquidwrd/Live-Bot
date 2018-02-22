@@ -80,7 +80,7 @@ class Travis:
                 headers = {
                     'Client-ID': client_id,
                 }
-                response = await self.bot.session.get("https://api.twitch.tv/helix/users?user_login=bsquidwrd", headers=headers)
+                response = await self.bot.session.get("https://api.twitch.tv/helix/users?login=bsquidwrd", headers=headers)
                 embed.add_field(name="Twitch Response", value=response.status, inline=True)
                 response_json = await response.json()
                 if response_json['logo'] and response_json['logo'] != "":
