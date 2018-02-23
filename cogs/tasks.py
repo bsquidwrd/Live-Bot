@@ -122,8 +122,11 @@ class Tasks:
                             except TwitchGame.DoesNotExist:
                                 g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=headers, params={'id': stream['game_id']})
                                 game_json = await g.json()
-                                game_defaults = {'name': game_json['data'][0]['name'], 'box_art': game_json['data'][0]['box_art_url']}
-                                game = TwitchGame.objects.get_or_create(id=game_json['data'][0]['id'], defaults=game_defaults)[0]
+                                try:
+                                    game_defaults = {'name': game_json['data'][0]['name'], 'box_art': game_json['data'][0]['box_art_url']}
+                                    game = TwitchGame.objects.get_or_create(id=game_json['data'][0]['id'], defaults=game_defaults)[0]
+                                except:
+                                    game = TwitchGame.objects.get_or_create(id=1, name='[Not Set]')[0]
                         else:
                             game = TwitchGame.objects.get_or_create(id=1, name='[Not Set]')[0]
                         live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
