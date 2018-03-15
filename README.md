@@ -1,5 +1,5 @@
 ## Live Bot
-[![Build Status](https://travis-ci.org/bsquidwrd/Live-Bot.svg?branch=master)](https://travis-ci.org/bsquidwrd/Live-Bot) [![Documentation Status](https://readthedocs.org/projects/live-bot/badge/?version=latest)](http://live-bot.readthedocs.io/en/latest/?badge=latest) [![Requirements Status](https://requires.io/github/bsquidwrd/Live-Bot/requirements.svg?branch=master)](https://requires.io/github/bsquidwrd/Live-Bot/requirements/?branch=master) [![Discord](https://discordapp.com/api/guilds/141694252361973770/widget.png?style=shield)](https://discord.gg/zXkb4JP)
+[![Build Status](https://travis-ci.org/bsquidwrd/Live-Bot.svg?branch=master)](https://travis-ci.org/bsquidwrd/Live-Bot) [![Documentation Status](https://readthedocs.org/projects/live-bot/badge/?version=latest)](http://live-bot.readthedocs.io/en/latest/?badge=latest) [![Requirements Status](https://requires.io/github/bsquidwrd/Live-Bot/requirements.svg?branch=master)](https://requires.io/github/bsquidwrd/Live-Bot/requirements/?branch=master) [![Discord](https://discordapp.com/api/guilds/141694252361973770/widget.png?style=shield)](https://discord.gg/zXkb4JP) [![Patreon](https://img.shields.io/badge/Patreon-Support-f96854.svg)](https://patreon.com/bsquidwrd)
 
 
 ## Running
