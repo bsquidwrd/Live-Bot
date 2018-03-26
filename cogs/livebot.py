@@ -283,7 +283,7 @@ class LiveBot:
                         await ctx.send("{0.author.mention}".format(ctx), embed=embed, delete_after=60.0)
 
                     if len(added_channels) == 0 and len(no_perms_channels) == 0:
-                        await ctx.send("{0.author.mention}: It looks like I wasn't able to understand the channels you provided me or add a notification for them. If this continues to happen, please use the support command to notify my owner.", delete_after=60.0)
+                        await ctx.send("{0.author.mention}: It looks like I wasn't able to understand the channels you provided me or add a notification for them. If this continues to happen, please use the support command to notify my owner.".format(ctx), delete_after=60.0)
 
             else:
                 try:
@@ -323,8 +323,8 @@ class LiveBot:
             return m.author.id == ctx.author.id
 
         try:
+            twitch_notifications = TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[d.id for d in DiscordChannel.objects.filter(guild__id=ctx.guild.id)])
             if not channel_name:
-                twitch_notifications = TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[d.id for d in DiscordChannel.objects.filter(guild__id=ctx.guild.id)])
                 wait_message_args = {
                     'description': "What stream should I stop monitoring for this server?",
                     'colour': discord.Colour.dark_purple(),
@@ -335,6 +335,7 @@ class LiveBot:
                 wait_message = await ctx.send("{0.author.mention}".format(ctx), embed=wait_message_embed)
                 response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
                 channel_name = response_message.clean_content
+            channel_name = channel_name.lower()
 
             try:
                 await wait_message.delete()
@@ -342,7 +343,15 @@ class LiveBot:
             except:
                 pass
 
-            twitch_channel = TwitchChannel.objects.get_or_create(name=channel_name)[0]
+            twitch_channels = TwitchChannel.objects.filter(name=channel_name)
+            if twitch_channels.count() == 1:
+                twitch_channel = twitch_channels[0]
+            elif twitch_channels.count() > 1:
+                await ctx.send("{0.author.mention} There were more than one channels found with that name, please use the exact channel name as you see it on their page.".format(ctx), delete_after=60)
+                raise UserCancelled
+            else:
+                await ctx.send("{0.author.mention} There were no channels found with that name, please try running the `list` command and using the name you see there to stop monitoring".format(ctx), delete_after=60)
+                raise UserCancelled
             twitch_notifications = twitch_notifications.filter(twitch=twitch_channel)
             twitch_app = SocialApp.objects.get_current('twitch')
             headers = {
