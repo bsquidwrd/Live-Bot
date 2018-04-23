@@ -2,6 +2,7 @@ node_modules/*
 *.log
 *.db
 *.db-journal
+*.sh
 .env
 env/
 data/*
