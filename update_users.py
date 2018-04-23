@@ -9,13 +9,14 @@ from livebot.models import TwitchChannel
 
 loop = asyncio.get_event_loop()
 session = aiohttp.ClientSession(loop=loop)
+timeout = 120
 
 
 async def run_update_twitch_channels():
     while True:
         await update_twitch_channels()
-        print("Waiting 60 seconds to check for users updated again...")
-        await asyncio.sleep(120)
+        print("Waiting {} seconds to check for users updated again...".format(timeout))
+        await asyncio.sleep(timeout)
 
 
 async def update_twitch_channels():
