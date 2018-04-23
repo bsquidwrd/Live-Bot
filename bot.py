@@ -82,7 +82,7 @@ class LiveBot(commands.AutoShardedBot):
             self.uptime = datetime.datetime.utcnow()
 
         live_bot_game = discord.Game(name='@{} help'.format(self.user.name), url=self.github_url, type=0)
-        await self.change_presence(game=live_bot_game, status=discord.Status.online, afk=False)
+        await self.change_presence(activity=live_bot_game, status=discord.Status.online, afk=False)
 
         print(f'Ready: {self.user} (ID: {self.user.id})')
 

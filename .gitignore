@@ -13,6 +13,7 @@ avatar.*
 ngrok.exe
 *.code-workspace
 .vscode
+.dist
 
 # Python .gitignore info
 # Byte-compiled / optimized / DLL files

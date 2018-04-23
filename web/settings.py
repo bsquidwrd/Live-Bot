@@ -44,7 +44,6 @@ else:
         '127.0.0.1',
         'localhost',
         '.bsquid.io',
-        'bsquidwrd-livebot.herokuapp.com',
     ]
 
 if 'TRAVIS' in os.environ:
