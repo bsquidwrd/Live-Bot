@@ -15,7 +15,7 @@ async def run_update_twitch_channels():
     while True:
         await update_twitch_channels()
         print("Waiting 60 seconds to check for users updated again...")
-        await asyncio.sleep(60)
+        await asyncio.sleep(120)
 
 
 async def update_twitch_channels():
