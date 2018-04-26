@@ -46,6 +46,8 @@ else:
         '.bsquid.io',
     ]
 
+USE_X_FORWARDED_HOST = True
+
 if 'TRAVIS' in os.environ:
     DATABASES = {
         'default': {
