@@ -15,6 +15,7 @@ ngrok.exe
 *.code-workspace
 .vscode
 .dist
+static/
 
 # Python .gitignore info
 # Byte-compiled / optimized / DLL files
