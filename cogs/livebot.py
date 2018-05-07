@@ -192,11 +192,11 @@ class LiveBot:
 
                 if response_message.content.lower() == "default":
                     message_for_notification = "{name} is live and is playing {game}! {url}"
-                elif len(response_message.clean_content) + char_count > 255:
+                elif len(response_message.content) + char_count > 255:
                     await ctx.send("{0.author.mention}: The message you type was too long. Please run the command again with a shorter message".format(ctx), delete_after=30.0)
                     raise UserCancelled
                 else:
-                    message_for_notification = response_message.clean_content
+                    message_for_notification = response_message.content
 
                 try:
                     await wait_message.delete()
