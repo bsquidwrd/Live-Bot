@@ -24,6 +24,7 @@ class LiveBot:
     def __init__(self, bot):
         self.bot = bot
         self.author = None
+        self.client_id = os.getenv('LIVE_BOT_TWITCH_SEARCH', None)
         self.TWITCH_USER_URL = "https://api.twitch.tv/helix/users?login={username}"
 
     async def on_ready(self):
@@ -95,9 +96,8 @@ class LiveBot:
                 response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
                 channel_name = response_message.clean_content
 
-            twitch_app = SocialApp.objects.get_current('twitch')
             headers = {
-                'Client-ID': twitch_app.client_id,
+                'Client-ID': self.client_id,
             }
             result = requests.get(url=self.TWITCH_USER_URL.format(username=channel_name), headers=headers)
             if result.status_code == requests.codes.ok:
@@ -353,9 +353,8 @@ class LiveBot:
                 await ctx.send("{0.author.mention} There were no channels found with that name, please try running the `list` command and using the name you see there to stop monitoring".format(ctx), delete_after=60)
                 raise UserCancelled
             twitch_notifications = twitch_notifications.filter(twitch=twitch_channel)
-            twitch_app = SocialApp.objects.get_current('twitch')
             headers = {
-                'Client-ID': twitch_app.client_id,
+                'Client-ID': self.client_id,
             }
             result = requests.get(url=self.TWITCH_USER_URL.format(username=twitch_channel.name), headers=headers)
             if result.status_code == requests.codes.ok:

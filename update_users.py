@@ -9,7 +9,7 @@ from livebot.models import TwitchChannel
 
 loop = asyncio.get_event_loop()
 session = aiohttp.ClientSession(loop=loop)
-timeout = 120
+timeout = 60
 
 
 async def run_update_twitch_channels():
@@ -21,7 +21,7 @@ async def run_update_twitch_channels():
 
 async def update_twitch_channels():
     headers = {
-        'Client-ID': os.environ['TWITCH_CLIENT_ID'],
+        'Client-ID': os.environ['LIVE_BOT_TWITCH_UPDATE'],
     }
     base_url = 'https://api.twitch.tv/helix/users'
     twitch_channels = TwitchChannel.objects.all()

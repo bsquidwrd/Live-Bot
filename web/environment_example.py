@@ -1,7 +1,9 @@
 import os
 import sys
 
-os.environ['TWITCH_CLIENT_ID'] = "" # Client ID form twitch (for testing)
+os.environ['LIVE_BOT_TWITCH_SEARCH'] = "" # Client ID from twitch (searching people via add command)
+os.environ['LIVE_BOT_TWITCH_UPDATE'] = "" # Client ID from twitch (updating user information for notifications)
+os.environ['LIVE_BOT_TWITCH_LIVE'] = "" # Client ID from twitch (checking if people are live)
 os.environ['LIVE_BOT_CLIENT_ID'] = "" # The Client ID from Discord
 os.environ['LIVE_BOT_TOKEN'] = "" # The Token from Discord
 os.environ['LIVE_BOT_DEBUG_MODE'] = "" # Is Django in Debug mode?

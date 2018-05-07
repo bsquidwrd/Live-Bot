@@ -24,8 +24,8 @@ class Tasks:
     """
     def __init__(self, bot):
         self.bot = bot
-        self.twitch_app = SocialApp.objects.get_current('twitch')
         self._task = bot.loop.create_task(self.run_tasks())
+        self.client_id = os.getenv('LIVE_BOT_TWITCH_LIVE', None)
         try:
             importlib.reload(communicate)
         except Exception as e:
@@ -38,8 +38,8 @@ class Tasks:
         """
         Bot is loaded, populate information that is needed for everything
         """
-        if not self.twitch_app:
-            print("No Twitch app loaded, unable to run Twitch Tasks")
+        if not self.client_id:
+            print("No Twitch Client ID, unable to run Twitch Tasks")
             self.__unload()
 
     async def run_tasks(self):
@@ -60,7 +60,7 @@ class Tasks:
                 twitch_notifications[n.twitch].append(n)
 
             headers = {
-                'Client-ID': self.twitch_app.client_id,
+                'Client-ID': self.client_id,
             }
 
             for notifications in grouper(twitch_notifications, 100):
