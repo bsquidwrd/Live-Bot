@@ -1,10 +1,10 @@
 git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
 Django==2.0
-django-allauth==0.34.0
-dj-database-url==0.4.2
-gunicorn==19.7.1
+django-allauth==0.35.0
+dj-database-url==0.5.0
+gunicorn==19.8.1
 requests==2.18.4
 requests-oauthlib==0.8.0
-psycopg2==2.7.3.2
-python-dateutil==2.6.1
+psycopg2==2.7.4
+python-dateutil==2.7.2
 whitenoise==3.3.1
