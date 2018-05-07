@@ -83,7 +83,7 @@ class LiveBot:
         Start/Edit monitoring a channel for when they go live
         """
         def author_check(m):
-            return m.author.id == ctx.author.id
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
         try:
             if not channel_name:
@@ -321,7 +321,7 @@ class LiveBot:
         Stop monitoring a channel for when they go live
         """
         def author_check(m):
-            return m.author.id == ctx.author.id
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
         try:
             twitch_notifications = TwitchNotification.objects.filter(content_type=DiscordChannel.get_content_type(), object_id__in=[d.id for d in DiscordChannel.objects.filter(guild__id=ctx.guild.id)])
