@@ -4,6 +4,7 @@ import asyncio
 import discord
 import requests
 import copy
+import os
 
 import web.wsgi
 from django.utils import timezone
