@@ -98,7 +98,7 @@ class LiveBot:
                 channel_name = response_message.clean_content
 
             try:
-                twitch_channel = TwitchChannel.objects.get(name=channel_name)
+                twitch_channel = TwitchChannel.objects.get(name=channel_name.lower())
                 result = None
             except Exception as e:
                 headers = {
