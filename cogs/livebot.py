@@ -97,202 +97,206 @@ class LiveBot:
                 response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
                 channel_name = response_message.clean_content
 
-            headers = {
-                'Client-ID': self.client_id,
-            }
-            result = requests.get(url=self.TWITCH_USER_URL.format(username=channel_name), headers=headers)
-            if result.status_code == requests.codes.ok:
-                result = result.json()['data'][0]
-                twitch_channel = TwitchChannel.objects.get_or_create(id=result['id'])[0]
-                try:
-                    # Update twitch channel name, just in case it's different in my database
-                    twitch_channel.name = result['login']
-                    twitch_channel.display_name = result['display_name']
-                    twitch_channel.profile_image = result['profile_image_url']
-                    twitch_channel.offline_image = result['offline_image_url']
-                    twitch_channel.save()
-                except:
-                    pass
-                try:
-                    await wait_message.delete()
-                    await response_message.delete()
-                except:
-                    pass
-
-                wait_message_args = {
-                    'title': twitch_channel.display_name,
-                    'description': result['description'],
-                    'url': twitch_channel.url,
-                    'colour': discord.Colour.dark_purple(),
+            try:
+                twitch_channel = TwitchChannel.objects.get(name=channel_name)
+                result = None
+            except Exception as e:
+                headers = {
+                    'Client-ID': self.client_id,
                 }
-                wait_message_embed = discord.Embed(**wait_message_args)
-                if twitch_channel.profile_image:
-                    wait_message_embed.set_thumbnail(url=twitch_channel.profile_image)
-                wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
-                wait_message_embed.set_footer(text="Please type YES or NO")
-                wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
-
-                if response_message.content.lower() == "no":
-                    await ctx.send("{0.author.mention}: Looks like I couldn't find what you're looking for.\nPlease run the command again once you are sure the name is right".format(ctx), delete_after=30.0)
-                    raise UserCancelled
-                elif response_message.content.lower() != "yes":
-                    await ctx.send("{0.author.mention}: I didn't understand your answer.\nPlease run the command and try again.".format(ctx), delete_after=30.0)
-                    raise UserCancelled
-                else:
-                    # User typed yes, continue on
-                    pass
-
-                try:
-                    await wait_message.delete()
-                    await response_message.delete()
-                except:
-                    pass
-
-                # Ask the user what the message should be and if it should mention everyone
-                char_count = 0
-                mention_everyone = True
-                wait_message_args = {
-                    'description': "Should the alert message mention everyone?",
-                    'colour': discord.Colour.dark_purple(),
-                }
-                wait_message_embed = discord.Embed(**wait_message_args)
-                wait_message_embed.set_footer(text="Please type YES or NO")
-                wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
-
-                if response_message.content.lower() == "no":
-                    mention_everyone = False
-                elif response_message.content.lower() != "yes":
-                    await ctx.send("{0.author.mention}: I didn't understand your answer.\nPlease run the command and try again.".format(ctx), delete_after=30.0)
-                    raise UserCancelled
-                else:
-                    # User typed yes, continue on
-                    char_count += len("@everyone ")
-
-                try:
-                    await wait_message.delete()
-                    await response_message.delete()
-                except:
-                    pass
-
-                # Ask user for message here
-                parameters_message = "{name} - Streamers name\n"
-                parameters_message += "{game} - Game they are playing\n"
-                parameters_message += "{url} - URL to their stream\n"
-                wait_message_args = {
-                    'description': "What message should be sent? (Max 255 characters)\nIf you'd like to use the default (see footer) type `default`",
-                    'colour': discord.Colour.dark_purple(),
-                }
-                wait_message_embed = discord.Embed(**wait_message_args)
-                wait_message_embed.add_field(name="Parameters", value=parameters_message, inline=True)
-                wait_message_embed.set_footer(text="Default: {name} is live and is playing {game}! {url}")
-                wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
-
-                if response_message.content.lower() == "default":
-                    message_for_notification = "{name} is live and is playing {game}! {url}"
-                elif len(response_message.content) + char_count > 255:
-                    await ctx.send("{0.author.mention}: The message you type was too long. Please run the command again with a shorter message".format(ctx), delete_after=30.0)
-                    raise UserCancelled
-                else:
-                    message_for_notification = response_message.content
-
-                try:
-                    await wait_message.delete()
-                    await response_message.delete()
-                except:
-                    pass
-
-                # User chose the right channel, now let's ask which channel they want to use
-                wait_message_args = {
-                    'description': "Which channel(s) should I notify when **{0.name}** goes live?".format(twitch_channel),
-                    'colour': discord.Colour.dark_purple(),
-                }
-                wait_message_embed = discord.Embed(**wait_message_args)
-                wait_message_embed.set_footer(text="Please mention the channel(s) with the # prefix")
-                wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
-
-                if (response_message.channel_mentions) == 0:
-                    await ctx.send("{0.author.mention}: Looks like you didn't mention any channels to be notified. Please run the command again.".format(ctx), delete_after=30.0)
-                    raise UserCancelled
-                else:
-                    # User mentioned channels
-                    added_channels = []
-                    no_perms_channels = []
-                    discord_guild = DiscordGuild.objects.get_or_create(id=ctx.guild.id)[0]
+                result = requests.get(url=self.TWITCH_USER_URL.format(username=channel_name), headers=headers)
+                if result.status_code == requests.codes.ok:
+                    result = result.json()['data'][0]
+                    twitch_channel = TwitchChannel.objects.get_or_create(id=result['id'])[0]
                     try:
-                        discord_guild.name = ctx.guild.name
-                        discord_guild.save()
+                        # Update twitch channel name, just in case it's different in my database
+                        twitch_channel.name = result['login']
+                        twitch_channel.display_name = result['display_name']
+                        twitch_channel.profile_image = result['profile_image_url']
+                        twitch_channel.offline_image = result['offline_image_url']
+                        twitch_channel.save()
+                    except:
+                        pass
+                    try:
+                        await wait_message.delete()
+                        await response_message.delete()
+                    except:
+                        pass
+                else:
+                    try:
+                        await wait_message.delete()
+                        await response_message.delete()
+                    except:
+                        pass
+                    raise Exception(
+                        "Result status was not okay: \n{}".format(result.text))
+
+            wait_message_args = {
+                'title': twitch_channel.display_name,
+                'description': result['description'] if result else None,
+                'url': twitch_channel.url,
+                'colour': discord.Colour.dark_purple(),
+            }
+            wait_message_embed = discord.Embed(**wait_message_args)
+            if twitch_channel.profile_image:
+                wait_message_embed.set_thumbnail(url=twitch_channel.profile_image)
+            wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
+            wait_message_embed.set_footer(text="Please type YES or NO")
+            wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+
+            if response_message.content.lower() == "no":
+                await ctx.send("{0.author.mention}: Looks like I couldn't find what you're looking for.\nPlease run the command again once you are sure the name is right".format(ctx), delete_after=30.0)
+                raise UserCancelled
+            elif response_message.content.lower() != "yes":
+                await ctx.send("{0.author.mention}: I didn't understand your answer.\nPlease run the command and try again.".format(ctx), delete_after=30.0)
+                raise UserCancelled
+            else:
+                # User typed yes, continue on
+                pass
+
+            try:
+                await wait_message.delete()
+                await response_message.delete()
+            except:
+                pass
+
+            # Ask the user what the message should be and if it should mention everyone
+            char_count = 0
+            mention_everyone = True
+            wait_message_args = {
+                'description': "Should the alert message mention everyone?",
+                'colour': discord.Colour.dark_purple(),
+            }
+            wait_message_embed = discord.Embed(**wait_message_args)
+            wait_message_embed.set_footer(text="Please type YES or NO")
+            wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+
+            if response_message.content.lower() == "no":
+                mention_everyone = False
+            elif response_message.content.lower() != "yes":
+                await ctx.send("{0.author.mention}: I didn't understand your answer.\nPlease run the command and try again.".format(ctx), delete_after=30.0)
+                raise UserCancelled
+            else:
+                # User typed yes, continue on
+                char_count += len("@everyone ")
+
+            try:
+                await wait_message.delete()
+                await response_message.delete()
+            except:
+                pass
+
+            # Ask user for message here
+            parameters_message = "{name} - Streamers name\n"
+            parameters_message += "{game} - Game they are playing\n"
+            parameters_message += "{url} - URL to their stream\n"
+            wait_message_args = {
+                'description': "What message should be sent? (Max 255 characters)\nIf you'd like to use the default (see footer) type `default`",
+                'colour': discord.Colour.dark_purple(),
+            }
+            wait_message_embed = discord.Embed(**wait_message_args)
+            wait_message_embed.add_field(name="Parameters", value=parameters_message, inline=True)
+            wait_message_embed.set_footer(text="Default: {name} is live and is playing {game}! {url}")
+            wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+
+            if response_message.content.lower() == "default":
+                message_for_notification = "{name} is live and is playing {game}! {url}"
+            elif len(response_message.content) + char_count > 255:
+                await ctx.send("{0.author.mention}: The message you type was too long. Please run the command again with a shorter message".format(ctx), delete_after=30.0)
+                raise UserCancelled
+            else:
+                message_for_notification = response_message.content
+
+            try:
+                await wait_message.delete()
+                await response_message.delete()
+            except:
+                pass
+
+            # User chose the right channel, now let's ask which channel they want to use
+            wait_message_args = {
+                'description': "Which channel(s) should I notify when **{0.name}** goes live?".format(twitch_channel),
+                'colour': discord.Colour.dark_purple(),
+            }
+            wait_message_embed = discord.Embed(**wait_message_args)
+            wait_message_embed.set_footer(text="Please mention the channel(s) with the # prefix")
+            wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+
+            if (response_message.channel_mentions) == 0:
+                await ctx.send("{0.author.mention}: Looks like you didn't mention any channels to be notified. Please run the command again.".format(ctx), delete_after=30.0)
+                raise UserCancelled
+            else:
+                # User mentioned channels
+                added_channels = []
+                no_perms_channels = []
+                discord_guild = DiscordGuild.objects.get_or_create(id=ctx.guild.id)[0]
+                try:
+                    discord_guild.name = ctx.guild.name
+                    discord_guild.save()
+                except:
+                    pass
+
+                for channel in response_message.channel_mentions:
+                    channel_permissions = channel.permissions_for(ctx.guild.get_member(self.bot.user.id))
+                    if not channel_permissions.embed_links or not channel_permissions.send_messages:
+                        no_perms_channels.append(channel)
+                        continue
+                    discord_channel = DiscordChannel.objects.get_or_create(id=channel.id, guild=discord_guild)[0]
+                    try:
+                        discord_channel.name = channel.name
+                        discord_channel.save()
                     except:
                         pass
 
-                    for channel in response_message.channel_mentions:
-                        channel_permissions = channel.permissions_for(ctx.guild.get_member(self.bot.user.id))
-                        if not channel_permissions.embed_links or not channel_permissions.send_messages:
-                            no_perms_channels.append(channel)
-                            continue
-                        discord_channel = DiscordChannel.objects.get_or_create(id=channel.id, guild=discord_guild)[0]
+                    try:
+                        notification_args = {
+                            "twitch": twitch_channel,
+                            "content_type": DiscordChannel.get_content_type(),
+                            "object_id": discord_channel.id,
+                        }
+                        twitch_notification = TwitchNotification.objects.get_or_create(**notification_args)[0]
                         try:
-                            discord_channel.name = channel.name
-                            discord_channel.save()
+                            twitch_notification.message = "{}{}".format("@everyone " if mention_everyone else "", message_for_notification)
+                            twitch_notification.save()
                         except:
                             pass
+                        added_channels.append(discord_channel)
+                    except:
+                        continue
 
-                        try:
-                            notification_args = {
-                                "twitch": twitch_channel,
-                                "content_type": DiscordChannel.get_content_type(),
-                                "object_id": discord_channel.id,
-                            }
-                            twitch_notification = TwitchNotification.objects.get_or_create(**notification_args)[0]
-                            try:
-                                twitch_notification.message = "{}{}".format("@everyone " if mention_everyone else "", message_for_notification)
-                                twitch_notification.save()
-                            except:
-                                pass
-                            added_channels.append(discord_channel)
-                        except:
-                            continue
+                if len(no_perms_channels) >= 1:
+                    no_perms_channels_message = ", ".join([c.name for c in no_perms_channels])
+                    no_perms_embed_args = {
+                        'description': "I don't have `embed links` and `send messages` permission in the following channels, so I won't notify them.\n\nIf you want them notified, please re-run the command after I have the proper permissions.",
+                        'colour': discord.Colour.red(),
+                    }
+                    no_perms_embed = discord.Embed(**no_perms_embed_args)
+                    no_perms_embed.add_field(name="Channels", value=no_perms_channels_message, inline=False)
+                    await ctx.send("{0.author.mention}".format(ctx), embed=no_perms_embed, delete_after=120.0)
 
-                    if len(no_perms_channels) >= 1:
-                        no_perms_channels_message = ", ".join([c.name for c in no_perms_channels])
-                        no_perms_embed_args = {
-                            'description': "I don't have `embed links` and `send messages` permission in the following channels, so I won't notify them.\n\nIf you want them notified, please re-run the command after I have the proper permissions.",
-                            'colour': discord.Colour.red(),
-                        }
-                        no_perms_embed = discord.Embed(**no_perms_embed_args)
-                        no_perms_embed.add_field(name="Channels", value=no_perms_channels_message, inline=False)
-                        await ctx.send("{0.author.mention}".format(ctx), embed=no_perms_embed, delete_after=120.0)
+                if len(added_channels) >= 1:
+                    added_channels_message = ", ".join([c.name for c in added_channels])
+                    embed_args = {
+                        'description': "I will monitor for when **{0.name}** goes live!".format(twitch_channel),
+                        'colour': discord.Colour.dark_purple(),
+                    }
+                    embed = discord.Embed(**embed_args)
+                    if twitch_channel.profile_image:
+                        embed.set_thumbnail(url=twitch_channel.profile_image)
+                    embed.add_field(name="Notify everyone?", value=str(mention_everyone), inline=True)
+                    embed.add_field(name="Message", value=message_for_notification, inline=True)
+                    embed.add_field(name="Channels", value=added_channels_message, inline=False)
+                    app_info = await self.bot.application_info()
+                    avatar = app_info.owner.default_avatar_url if not app_info.owner.avatar else app_info.owner.avatar_url
+                    embed.set_footer(text = "Developer/Owner: {0.name}#{0.discriminator} (Shard ID: {1})".format(app_info.owner, ctx.guild.shard_id), icon_url = avatar)
+                    await ctx.send("{0.author.mention}".format(ctx), embed=embed, delete_after=60.0)
 
-                    if len(added_channels) >= 1:
-                        added_channels_message = ", ".join([c.name for c in added_channels])
-                        embed_args = {
-                            'description': "I will monitor for when **{0.name}** goes live!".format(twitch_channel),
-                            'colour': discord.Colour.dark_purple(),
-                        }
-                        embed = discord.Embed(**embed_args)
-                        if twitch_channel.profile_image:
-                            embed.set_thumbnail(url=twitch_channel.profile_image)
-                        embed.add_field(name="Notify everyone?", value=str(mention_everyone), inline=True)
-                        embed.add_field(name="Message", value=message_for_notification, inline=True)
-                        embed.add_field(name="Channels", value=added_channels_message, inline=False)
-                        app_info = await self.bot.application_info()
-                        avatar = app_info.owner.default_avatar_url if not app_info.owner.avatar else app_info.owner.avatar_url
-                        embed.set_footer(text = "Developer/Owner: {0.name}#{0.discriminator} (Shard ID: {1})".format(app_info.owner, ctx.guild.shard_id), icon_url = avatar)
-                        await ctx.send("{0.author.mention}".format(ctx), embed=embed, delete_after=60.0)
-
-                    if len(added_channels) == 0 and len(no_perms_channels) == 0:
-                        await ctx.send("{0.author.mention}: It looks like I wasn't able to understand the channels you provided me or add a notification for them. If this continues to happen, please use the support command to notify my owner.".format(ctx), delete_after=60.0)
-
-            else:
-                try:
-                    await wait_message.delete()
-                    await response_message.delete()
-                except:
-                    pass
-                raise Exception("Result status was not okay: \n{}".format(result.text))
+                if len(added_channels) == 0 and len(no_perms_channels) == 0:
+                    await ctx.send("{0.author.mention}: It looks like I wasn't able to understand the channels you provided me or add a notification for them. If this continues to happen, please use the support command to notify my owner.".format(ctx), delete_after=60.0)
 
         except asyncio.TimeoutError:
             await ctx.send("{} It looks like you took too long to respond. Please run the command again if you wish to continue.".format(ctx.author.mention))
