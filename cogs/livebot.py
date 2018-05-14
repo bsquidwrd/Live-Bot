@@ -358,57 +358,35 @@ class LiveBot:
                 await ctx.send("{0.author.mention} There were no channels found with that name, please try running the `list` command and using the name you see there to stop monitoring".format(ctx), delete_after=60)
                 raise UserCancelled
             twitch_notifications = twitch_notifications.filter(twitch=twitch_channel)
-            headers = {
-                'Client-ID': self.client_id,
+
+            wait_message_args = {
+                'title': twitch_channel.display_name,
+                'url': twitch_channel.url,
+                'colour': discord.Colour.dark_purple(),
             }
-            result = requests.get(url=self.TWITCH_USER_URL.format(username=twitch_channel.name), headers=headers)
-            if result.status_code == requests.codes.ok:
-                try:
-                    twitch_channel.name = result['login']
-                    twitch_channel.display_name = result['display_name']
-                    twitch_channel.profile_image = result['profile_image_url']
-                    twitch_channel.offline_image = result['offline_image_url']
-                    twitch_channel.save()
-                except:
-                    pass
-                result = result.json()['data'][0]
-                wait_message_args = {
-                    'title': twitch_channel.display_name,
-                    'description': result['description'],
-                    'url': twitch_channel.url,
-                    'colour': discord.Colour.dark_purple(),
-                }
-                wait_message_embed = discord.Embed(**wait_message_args)
-                if twitch_channel.profile_image:
-                    wait_message_embed.set_thumbnail(url=twitch_channel.profile_image)
-                wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
-                wait_message_embed.set_footer(text="Please type YES or NO")
-                wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
-                response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+            wait_message_embed = discord.Embed(**wait_message_args)
+            if twitch_channel.profile_image:
+                wait_message_embed.set_thumbnail(url=twitch_channel.profile_image)
+            wait_message_embed.add_field(name="Stream", value=twitch_channel.url, inline=True)
+            wait_message_embed.set_footer(text="Please type YES or NO")
+            wait_message = await ctx.send(content="{0.author.mention}: Is this the channel you're looking for?".format(ctx), embed=wait_message_embed)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
 
-                if response_message.content.lower() == "no":
-                    await ctx.send("{0.author.mention}: Looks like I couldn't find what you're looking for.\nPlease run the command again once you are sure the name is right".format(ctx), delete_after=30.0)
-                    raise UserCancelled
-                elif response_message.content.lower() != "yes":
-                    await ctx.send("{0.author.mention}: I didn't understand your answer.\nPlease run the command and try again.".format(ctx), delete_after=30.0)
-                    raise UserCancelled
-                else:
-                    # User typed yes, continue on
-                    pass
-
-                try:
-                    await wait_message.delete()
-                    await response_message.delete()
-                except:
-                    pass
-
+            if response_message.content.lower() == "no":
+                await ctx.send("{0.author.mention}: Looks like I couldn't find what you're looking for.\nPlease run the command again once you are sure the name is right".format(ctx), delete_after=30.0)
+                raise UserCancelled
+            elif response_message.content.lower() != "yes":
+                await ctx.send("{0.author.mention}: I didn't understand your answer.\nPlease run the command and try again.".format(ctx), delete_after=30.0)
+                raise UserCancelled
             else:
-                try:
-                    await wait_message.delete()
-                    await response_message.delete()
-                except:
-                    pass
-                raise Exception("Result status was not okay: \n{}".format(result.text))
+                # User typed yes, continue on
+                pass
+
+            try:
+                await wait_message.delete()
+                await response_message.delete()
+            except:
+                pass
 
             try:
                 await wait_message.delete()
