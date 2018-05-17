@@ -21,7 +21,8 @@ async def run_update_twitch_channels():
 
 async def update_twitch_channels():
     headers = {
-        'Client-ID': os.environ['LIVE_BOT_TWITCH_UPDATE'],
+        'Client-ID': os.environ['LIVE_BOT_TWITCH_LIVE'],
+        'Authorization': 'Bearer {}'.format(os.getenv('LIVE_BOT_TWITCH_BEARER', None)),
     }
     base_url = 'https://api.twitch.tv/helix/users'
     twitch_channels = TwitchChannel.objects.all()

@@ -25,7 +25,12 @@ class LiveBot:
     def __init__(self, bot):
         self.bot = bot
         self.author = None
-        self.client_id = os.getenv('LIVE_BOT_TWITCH_SEARCH', None)
+        self.client_id = os.getenv('LIVE_BOT_TWITCH_LIVE', None)
+        self.bearer_token = os.getenv('LIVE_BOT_TWITCH_BEARER', None)
+        self.headers = {
+            'Client-ID': self.client_id,
+            'Authorization': 'Bearer {}'.format(self.bearer_token),
+        }
         self.TWITCH_USER_URL = "https://api.twitch.tv/helix/users?login={username}"
 
     async def on_ready(self):
@@ -101,10 +106,7 @@ class LiveBot:
                 twitch_channel = TwitchChannel.objects.get(name=channel_name.lower())
                 result = None
             except Exception as e:
-                headers = {
-                    'Client-ID': self.client_id,
-                }
-                result = requests.get(url=self.TWITCH_USER_URL.format(username=channel_name), headers=headers)
+                result = requests.get(url=self.TWITCH_USER_URL.format(username=channel_name), headers=self.headers)
                 if result.status_code == requests.codes.ok:
                     result = result.json()['data'][0]
                     twitch_channel = TwitchChannel.objects.get_or_create(id=result['id'])[0]
