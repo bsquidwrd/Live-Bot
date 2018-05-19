@@ -17,5 +17,5 @@ script:
 - python bot.py test
 notifications:
   email:
-    on_success: never
+    on_success: change
     on_failure: always
