@@ -1,5 +1,6 @@
 from discord.ext import commands
 from cogs.utils import logify_exception_info, logify_dict, communicate, current_line, log_error, grouper
+from cogs.utils.tokens import get_request_headers
 from dateutil.parser import parse
 import asyncio
 import discord
@@ -26,11 +27,6 @@ class Tasks:
         self.bot = bot
         self._task = bot.loop.create_task(self.run_tasks())
         self.client_id = os.getenv('LIVE_BOT_TWITCH_LIVE', None)
-        self.bearer_token = os.getenv('LIVE_BOT_TWITCH_BEARER', None)
-        self.headers = {
-            'Client-ID': self.client_id,
-            'Authorization': 'Bearer {}'.format(self.bearer_token),
-        }
         try:
             importlib.reload(communicate)
         except Exception as e:
@@ -59,6 +55,7 @@ class Tasks:
 
     async def run_scheduled_tasks(self):
         try:
+            headers = get_request_headers()
             result = None
             twitch_notifications = defaultdict(list)
             for n in TwitchNotification.objects.all():
@@ -71,7 +68,7 @@ class Tasks:
                     if v:
                         payload.append(('user_id', str(v.id)))
 
-                result = await self.bot.session.get("https://api.twitch.tv/helix/streams", headers=self.headers, params=payload)
+                result = await self.bot.session.get("https://api.twitch.tv/helix/streams", headers=headers, params=payload)
                 try:
                     result_json = await result.json()
                 except Exception as e:
@@ -109,7 +106,7 @@ class Tasks:
                     if stream is not None:
                         twitch, created = TwitchChannel.objects.get_or_create(id=stream['user_id'])
                         if created:
-                            r = await self.bot.session.get("https://api.twitch.tv/helix/users", headers=self.headers, params={'id': twitch.id})
+                            r = await self.bot.session.get("https://api.twitch.tv/helix/users", headers=headers, params={'id': twitch.id})
                             user_json = await r.json()
                             twitch.name = user_json[0]['login']
                             twitch.display_name = user_json[0]['display_name']
@@ -121,7 +118,7 @@ class Tasks:
                             try:
                                 game = TwitchGame.objects.get(id=stream['game_id'])
                             except TwitchGame.DoesNotExist:
-                                g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=self.headers, params={'id': stream['game_id']})
+                                g = await self.bot.session.get("https://api.twitch.tv/helix/games", headers=headers, params={'id': stream['game_id']})
                                 game_json = await g.json()
                                 try:
                                     game_defaults = {'name': game_json['data'][0]['name'], 'box_art': game_json['data'][0]['box_art_url']}

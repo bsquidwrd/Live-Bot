@@ -1,5 +1,6 @@
 from discord.ext import commands
 from cogs.utils import checks, logify_exception_info, logify_dict, communicate, log_error
+from cogs.utils.tokens import get_request_headers
 import asyncio
 import discord
 import requests
@@ -26,11 +27,6 @@ class LiveBot:
         self.bot = bot
         self.author = None
         self.client_id = os.getenv('LIVE_BOT_TWITCH_LIVE', None)
-        self.bearer_token = os.getenv('LIVE_BOT_TWITCH_BEARER', None)
-        self.headers = {
-            'Client-ID': self.client_id,
-            'Authorization': 'Bearer {}'.format(self.bearer_token),
-        }
         self.TWITCH_USER_URL = "https://api.twitch.tv/helix/users?login={username}"
 
     async def on_ready(self):
@@ -87,6 +83,7 @@ class LiveBot:
         """
         Start/Edit monitoring a channel for when they go live
         """
+        headers = get_request_headers()
         def author_check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
@@ -106,7 +103,7 @@ class LiveBot:
                 twitch_channel = TwitchChannel.objects.get(name=channel_name.lower())
                 result = None
             except Exception as e:
-                result = requests.get(url=self.TWITCH_USER_URL.format(username=channel_name), headers=self.headers)
+                result = requests.get(url=self.TWITCH_USER_URL.format(username=channel_name), headers=headers)
                 if result.status_code == requests.codes.ok:
                     result = result.json()['data'][0]
                     twitch_channel = TwitchChannel.objects.get_or_create(id=result['id'])[0]
@@ -326,6 +323,7 @@ class LiveBot:
         """
         Stop monitoring a channel for when they go live
         """
+        headers = get_request_headers()
         def author_check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 

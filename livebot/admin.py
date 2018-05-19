@@ -7,6 +7,12 @@ class GlobalAdmin(admin.ModelAdmin):
     get_display_name.short_description = 'Display Name'
 
 
+@admin.register(BearerToken)
+class BearerTokenAdmin(GlobalAdmin):
+    list_display = ('get_display_name', 'timestamp', 'expires_in', 'expired')
+    search_fields = ['access_token', 'refresh_token']
+
+
 @admin.register(TwitchGame)
 class TwitchGameAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'id')

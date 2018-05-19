@@ -6,6 +6,23 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from cogs.utils import logify_exception_info
 
+
+class BearerToken(models.Model):
+    timestamp = models.DateTimeField(default=timezone.now, verbose_name='Timestamp')
+    expired = models.BooleanField(default=False, verbose_name='Expired')
+    access_token = models.CharField(max_length=255, verbose_name='Access Token')
+    expires_in = models.BigIntegerField(verbose_name='Expires In (seconds)')
+    refresh_token = models.CharField(max_length=255, verbose_name='Refresh Token')
+    
+    def __str__(self):
+        return '{}'.format(self.access_token)
+    
+    class Meta:
+        verbose_name = 'Bearer Token'
+        verbose_name_plural = 'Bearer Tokens'
+        ordering = ['-timestamp', 'expired']
+
+
 class TwitchGame(models.Model):
     id = models.BigIntegerField(primary_key=True, verbose_name='Game ID')
     name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Game Name')

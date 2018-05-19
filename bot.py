@@ -38,6 +38,7 @@ initial_extensions = (
     'cogs.stats',
     'cogs.meta',
     'cogs.livebot',
+    'cogs.token',
 )
 
 def _prefix_callable(bot, msg):

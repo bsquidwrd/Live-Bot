@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import os
 from cogs.utils import grouper
+from cogs.utils.tokens import get_request_headers
 from django.db.models import Model
 import web.wsgi
 from livebot.models import TwitchChannel
@@ -20,10 +21,7 @@ async def run_update_twitch_channels():
 
 
 async def update_twitch_channels():
-    headers = {
-        'Client-ID': os.environ['LIVE_BOT_TWITCH_LIVE'],
-        'Authorization': 'Bearer {}'.format(os.getenv('LIVE_BOT_TWITCH_BEARER', None)),
-    }
+    headers = get_request_headers()
     base_url = 'https://api.twitch.tv/helix/users'
     twitch_channels = TwitchChannel.objects.all()
     for channels in grouper(twitch_channels, 100):
