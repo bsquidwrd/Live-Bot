@@ -131,6 +131,7 @@ class TwitchNotification(models.Model):
     object_id = models.BigIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     message = models.CharField(max_length=255, verbose_name='Notification Message')
+    delay_minutes = models.IntegerField(default=60, verbose_name='Delay Minutes')
 
     def __str__(self):
         return '{}'.format(self.twitch)

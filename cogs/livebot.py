@@ -197,6 +197,7 @@ class LiveBot:
             }
             wait_message_embed = discord.Embed(**wait_message_args)
             wait_message_embed.add_field(name="Parameters", value=parameters_message, inline=True)
+            wait_message_embed.add_field(name="Note", value="Everything within { and } MUST be lowercase!", inline=True)
             wait_message_embed.set_footer(text="Default: {name} is live and is playing {game}! {url}")
             wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
             response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
@@ -208,6 +209,29 @@ class LiveBot:
                 raise UserCancelled
             else:
                 message_for_notification = response_message.content
+
+            try:
+                await wait_message.delete()
+                await response_message.delete()
+            except:
+                pass
+
+            # Prompt user for how long to wait before notification again
+            wait_message_args = {
+                'description': "How long should I delay notifications for when **{0.name}** goes live (in minutes)?".format(twitch_channel),
+                'colour': discord.Colour.dark_purple(),
+            }
+            wait_message_embed = discord.Embed(**wait_message_args)
+            wait_message_embed.set_footer(text="Default: 60 minutes")
+            wait_message = await ctx.send(content="{0.author.mention}".format(ctx), embed=wait_message_embed)
+            response_message = await self.bot.wait_for('message', check=author_check, timeout=QUESTION_TIMEOUT)
+            
+            if response_message.content.lower() == "default":
+                delay_minutes = 60
+            elif int(response_message.clean_content) < 60:
+                delay_minutes = 60
+            else:
+                delay_minutes = int(response_message.clean_content)
 
             try:
                 await wait_message.delete()
@@ -233,6 +257,7 @@ class LiveBot:
                 added_channels = []
                 no_perms_channels = []
                 discord_guild = DiscordGuild.objects.get_or_create(id=ctx.guild.id)[0]
+                self_member = ctx.guild.get_member(self.bot.user.id)
                 try:
                     discord_guild.name = ctx.guild.name
                     discord_guild.save()
@@ -240,10 +265,17 @@ class LiveBot:
                     pass
 
                 for channel in response_message.channel_mentions:
-                    channel_permissions = channel.permissions_for(ctx.guild.get_member(self.bot.user.id))
-                    if not channel_permissions.embed_links or not channel_permissions.send_messages:
+                    channel_permissions = channel.permissions_for(self_member)
+                    if not channel_permissions.embed_links or not channel_permissions.send_messages or not channel_permissions.read_messages:
                         no_perms_channels.append(channel)
                         continue
+                        # channel_permissions = channel.permissions_for(self_member)
+                        # await channel.set_permissions(self_member, read_messages=True, send_messages=True, embed_links=True)
+                        # overwrite = discord.PermissionOverwrite()
+                        # overwrite.send_messages = True
+                        # overwrite.embed_links = True
+                        # overwrite.read_messages = True
+                        # await channel.set_permissions(self_member, overwrite=overwrite)
                     discord_channel = DiscordChannel.objects.get_or_create(id=channel.id, guild=discord_guild)[0]
                     try:
                         discord_channel.name = channel.name
@@ -260,6 +292,7 @@ class LiveBot:
                         twitch_notification = TwitchNotification.objects.get_or_create(**notification_args)[0]
                         try:
                             twitch_notification.message = "{}{}".format("@everyone " if mention_everyone else "", message_for_notification)
+                            twitch_notification.delay_minutes = delay_minutes
                             twitch_notification.save()
                         except:
                             pass

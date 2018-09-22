@@ -146,6 +146,11 @@ class Tasks:
                                     live_notification.success = True
                                     log.save()
                                     live_notification.save()
+                                elif notification_timedelta <= notification.delay_minutes*60:
+                                    log.message += "Stream went live within {} seconds of their last live instance, marking as success. Timedelta: {}".format(notification.delay_minutes, notification_timedelta)
+                                    live_notification.success = True
+                                    log.save()
+                                    live_notification.save()
                                 else:
                                     self.bot.loop.create_task(self.alert(stream, notification, live_notification, game))
                             else:
@@ -206,6 +211,10 @@ class Tasks:
                     # embed.set_image(url=stream['preview']['medium'])
                     embed.set_footer(text="Stream start time")
                     if not live_notification.success:
+                        self_member = channel.guild.get_member(self.bot.user.id)
+                        # channel_permissions = channel.permissions_for(self_member)
+                        # if not channel_permissions.read_messages or not channel_permissions.send_messages or not channel_permissions.embed_links:
+                        #     await message.channel.set_permissions(self_member, read_messages=True, send_messages=True, embed_links=True)
                         try:
                             msg = await channel.send("{}".format(message), embed=embed)
                         except Exception as e:
