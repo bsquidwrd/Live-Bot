@@ -1,5 +1,5 @@
 from discord.ext import commands
-from cogs.utils import checks, logify_exception_info, logify_dict, communicate, log_error
+from cogs.utils import checks, logify_exception_info, logify_dict, communicate, log_error, parse_time
 from cogs.utils.tokens import get_request_headers
 import asyncio
 import discord
@@ -228,10 +228,14 @@ class LiveBot:
             
             if response_message.content.lower() == "default":
                 delay_minutes = 60
-            elif int(response_message.clean_content) < 60:
-                delay_minutes = 60
             else:
-                delay_minutes = int(response_message.clean_content)
+                try:
+                    delay_minutes = int(response_message.clean_cotent)
+                    if delay_minutes < 60:
+                        delay_minutes = 60
+                except Exception as e:
+                    typed_timedelta = parse_time(response_message.clean_content.strip().replace(" ", ""))
+                    delay_minutes = (typed_timedelta.total_seconds() % 3600) // 60
 
             try:
                 await wait_message.delete()

@@ -3,6 +3,8 @@ import discord
 import json
 import sys
 import os
+import re
+from datetime import timedelta
 from inspect import getframeinfo, getouterframes, currentframe
 from itertools import zip_longest
 
@@ -76,6 +78,21 @@ async def log_error(bot, content : str, **embed_args):
     embed = create_embed(**embed_args)
     await log_channel.send(content="Something went wrong when trying to run through the tasks.", embed=embed)
 
+
 def grouper(iterable, n, fillvalue=None):
     args = [iter(iterable)] * n
     return zip_longest(*args, fillvalue=fillvalue)
+
+
+def parse_time(time_str):
+    regex = re.compile(
+        r'((?P<hours>\d+?)hr)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
+    parts = regex.match(time_str.replace(" ", ""))
+    if not parts:
+        return
+    parts = parts.groupdict()
+    time_params = {}
+    for (name, param) in parts.items():
+        if param:
+            time_params[name] = int(param)
+    return timedelta(**time_params)
