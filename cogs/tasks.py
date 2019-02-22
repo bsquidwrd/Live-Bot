@@ -61,8 +61,9 @@ class Tasks:
             for n in TwitchNotification.objects.all():
                 twitch_notifications[n.twitch].append(n)
 
-            for notifications in grouper(twitch_notifications, 100):
+            for notifications in grouper(twitch_notifications, 75):
                 payload = [('type', 'live')]
+                # payload = []
                 for v in notifications:
                     # Because it can be None
                     if v:
@@ -71,6 +72,7 @@ class Tasks:
                 result = await self.bot.session.get("https://api.twitch.tv/helix/streams", headers=headers, params=payload)
                 try:
                     result_json = await result.json()
+                    # print(result.url)
                 except Exception as e:
                     raise Exception("Could not parse JSON from response.")
                 if not result.status == 200:
@@ -124,10 +126,10 @@ class Tasks:
                                     game_defaults = {'name': game_json['data'][0]['name'], 'box_art': game_json['data'][0]['box_art_url']}
                                     game = TwitchGame.objects.get_or_create(id=game_json['data'][0]['id'], defaults=game_defaults)[0]
                                 except:
-                                    game = TwitchGame.objects.get_or_create(id=1, name='[Not Set]')[0]
+                                    game = TwitchGame.objects.get_or_create(id=0, name='[Not Set]')[0]
                         else:
-                            game = TwitchGame.objects.get_or_create(id=1, name='[Not Set]')[0]
-                        live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp)[0]
+                            game = TwitchGame.objects.get_or_create(id=0, name='[Not Set]')[0]
+                        live = TwitchLive.objects.get_or_create(twitch=twitch, timestamp=timestamp, game=game)[0]
                         for notification in twitch.twitchnotification_set.all():
                             live_notifications = live.notification_set.filter(live=live, content_type=notification.content_type, object_id=notification.object_id)
                             last_notification = Notification.objects.filter(content_type=notification.content_type, object_id=notification.object_id, live__twitch=twitch, success=True).order_by('-live__timestamp')
@@ -152,9 +154,9 @@ class Tasks:
                                     log.save()
                                     live_notification.save()
                                 else:
-                                    self.bot.loop.create_task(self.alert(stream, notification, live_notification, game))
+                                    self.bot.loop.create_task(self.alert(stream, notification, live_notification))
                             else:
-                                self.bot.loop.create_task(self.alert(stream, notification, live_notification, game))
+                                self.bot.loop.create_task(self.alert(stream, notification, live_notification))
         except Exception as e:
             log_item = Log.objects.create(message="Could not retrieve list of streams that are being monitored:\n{}\n{}\n".format(logify_exception_info(), e))
             try:
@@ -181,12 +183,13 @@ class Tasks:
             }
             await log_error(bot=self.bot, content="Something went wrong when trying to run through the tasks.", d=error_info, author=author_dict, **error_embed_args)
 
-    async def alert(self, stream: dict, notification: TwitchNotification, live_notification: Notification, game: TwitchGame = TwitchGame(id=1, name='[Not Set]')):
+    async def alert(self, stream: dict, notification: TwitchNotification, live_notification: Notification):#, game: TwitchGame = TwitchGame(id=0, name='[Not Set]')):
         discord_content_type = DiscordChannel.get_content_type()
         twitter_content_type = Twitter.get_content_type()
         try:
             twitch = notification.twitch
             timestamp = parse(stream['started_at'])
+            game = live_notification.live.game
             log = live_notification.log
             message = notification.get_message(name=twitch.display_name, game=game.name)
 

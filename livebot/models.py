@@ -162,6 +162,7 @@ class TwitchNotification(models.Model):
 class TwitchLive(models.Model):
     twitch = models.ForeignKey(TwitchChannel, verbose_name='Twitch Channel', on_delete=models.CASCADE)
     timestamp = models.DateTimeField()
+    game = models.ForeignKey(TwitchGame, verbose_name='Twitch Game', blank=True, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return '{}'.format(self.twitch)

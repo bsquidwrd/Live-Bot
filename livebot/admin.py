@@ -73,6 +73,7 @@ class TwitchNotificationAdmin(GlobalAdmin):
 class TwitchLiveAdmin(GlobalAdmin):
     list_display = ('get_display_name', 'timestamp')
     search_fields = ['twitch__id', 'twitch__name',]
+    raw_id_fields = ('twitch', 'game',)
     date_hierarchy = 'timestamp'
     ordering = ['-timestamp']
 
