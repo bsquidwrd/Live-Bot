@@ -140,6 +140,7 @@ class Tasks:
                                 live_notification = Notification.objects.create(live=live, content_type=notification.content_type, object_id=notification.object_id, success=False, log=log)
                             else:
                                 live_notification = live_notifications.filter(success=False)[0]
+                                log = live_notification.log
 
                             if last_notification.count() >= 1:
                                 notification_timedelta = (live_notification.live.timestamp - last_notification[0].live.timestamp).total_seconds()
