@@ -11,16 +11,7 @@ import io
 import datetime
 from collections import Counter
 
-def get_current_commit():
-    """
-    Returns the current version the bot is running
-    """
-    import os
-    import subprocess
-    git_dir = os.path.join(os.environ['LIVE_BOT_BASE_DIR'], ".git")
-    return subprocess.check_output(["git", "--git-dir={}".format(git_dir), "rev-parse", "--verify", "HEAD", "--short"]).decode("utf-8")
-
-class Admin:
+class Admin(commands.Cog):
     """Admin-only commands that make the bot dynamic."""
 
     def __init__(self, bot):
@@ -75,16 +66,6 @@ class Admin:
             await ctx.send(f'```py\n{traceback.format_exc()}\n```')
         else:
             await ctx.send('\N{OK HAND SIGN}')
-
-    @commands.command(name='version', pass_context=True, hidden=True)
-    async def version_command(self, ctx):
-        """
-        Print the version of the bot currently running
-        """
-        member = ctx.message.server.get_member(self.bot.user.id)
-        current_commit = get_current_commit()
-        commit_url = member.game.url + '/commit/' + current_commit
-        msg = await self.bot.send_message(ctx.message.channel, 'I am currently running on commit `{}`\n\n{}'.format(current_commit, commit_url))
 
     @commands.command(aliases=['stop'], hidden=True)
     @commands.is_owner()

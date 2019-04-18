@@ -54,8 +54,7 @@ class LiveBot(commands.AutoShardedBot):
         self.client_id = int(os.environ['LIVE_BOT_CLIENT_ID'])
         self.client_token = os.environ['LIVE_BOT_TOKEN']
         self.owner_id = int(os.environ['LIVE_BOT_OWNER_ID'])
-        self.bots_key = os.environ.get('LIVE_BOT_DBOTS_KEY', None)
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.session = aiohttp.ClientSession()
         self.github_url = github_url
         self.debug_mode = debug_mode
 
@@ -139,6 +138,7 @@ if __name__ == '__main__':
         debug_mode = True
         initial_extensions = (
             'cogs.travis',
+            'cogs.admin',
         )
     bot = LiveBot()
     bot.run()

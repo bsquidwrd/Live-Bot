@@ -1,11 +1,12 @@
 from cogs.utils import logify_exception_info, logify_dict
 import asyncio
 import discord
+from discord.ext import commands
 
 import web.wsgi
 from livebot.models import *
 
-class Signals:
+class Signals(commands.Cog):
     """
     Catches signals and does things with them
     """

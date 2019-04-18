@@ -1,33 +1,65 @@
+from discord.ext import commands
 import aiohttp
 import json
 import logging
+import os
 
-log = logging.getLogger(__name__)
+global logger
+logger = logging.getLogger(__name__)
 
-DISCORD_BOTS_API = 'https://bots.discord.pw/api'
 
-class Stats:
-    """Cog for updating bots.discord.pw bot information."""
+class Stats(commands.Cog):
+    """Cog for updating bot information on misc sites."""
     def __init__(self, bot):
         self.bot = bot
+        self._task = self.bot.loop.create_task(self.update_task())
 
-    async def update(self):
+
+    def cog_unload(self):
+        self._task.cancel()
+
+    
+    async def update_task(self):
+        """This function runs every 30 minutes to automatically update your server count"""
         if not self.bot.debug_mode:
-            guild_count = len(self.bot.guilds)
+            while not self.bot.is_ready():
+                await asyncio.sleep(1)
+            while not self.bot.is_closed():
+                logger.info('Attempting to post server count')
+                try:
+                    guild_count = len(self.bot.guilds)
+                    await self.update(bot_id=self.bot.user.id, guild_count=guild_count)
+                    logger.info('Posted server count')
+                except Exception as e:
+                    logger.exception('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
+                await asyncio.sleep(1800)
 
-            payload = json.dumps({
-                'server_count': guild_count
-            })
+    
+    async def update(self, bot_id, guild_count):
+        # This is to keep it all under one function
+        # so that it can be done in a loop easily
+        async with aiohttp.ClientSession() as client:
+            await self.update_dbl(client, bot_id, guild_count)
 
-            headers = {
-                'authorization': self.bot.bots_key,
-                'content-type': 'application/json'
-            }
 
-            url = f'{DISCORD_BOTS_API}/bots/{self.bot.user.id}/stats'
-            async with self.bot.session.post(url, data=payload, headers=headers) as resp:
-                log.info(f'DBots statistics returned {resp.status} for {payload}')
+    async def update_dbl(self, client, bot_id, guild_count):
+        # DBL - discordbots.org
+        token = os.environ.get('LIVE_BOT_DBL_KEY', None)
+        if token:
+            try:
+                BASE_URL = "https://discordbots.org/api"
+                headers = {'Authorization': token}
+                payload = {'server_count': guild_count}
+                url = f'{BASE_URL}/bots/{bot_id}/stats'
+                async with client.post(url, data=payload, headers=headers) as resp:
+                    logger.info(f'DBL statistics returned {resp.status} for {payload}')
+            except Exception as e:
+                logger.exception('Failed to post server count to DBL\n{}: {}'.format(type(e).__name__, e))
 
+
+###########################
+# DON'T CHANGE BELOW THIS #
+###########################
     async def on_guild_join(self, guild):
         await self.update()
 

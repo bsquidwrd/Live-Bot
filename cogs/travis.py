@@ -1,6 +1,7 @@
 from cogs.utils import logify_exception_info, logify_dict
 import asyncio
 import discord
+from discord.ext import commands
 import os
 import random
 
@@ -9,7 +10,7 @@ from livebot.models import *
 from django.utils import timezone
 from bot import initial_extensions
 
-class Travis:
+class Travis(commands.Cog):
     """
     Run some internal tests to make sure code works
     """

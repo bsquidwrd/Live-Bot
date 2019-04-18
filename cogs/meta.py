@@ -14,7 +14,7 @@ import web.wsgi
 from livebot.models import Log
 from livebot.utils import logify_exception_info
 
-class Meta:
+class Meta(commands.Cog):
     """Commands for utilities related to Discord or the Bot itself."""
 
     def __init__(self, bot):
@@ -22,7 +22,7 @@ class Meta:
         bot.remove_command('help')
         # self._task = bot.loop.create_task(self.run_tasks())
 
-    # def __unload(self):
+    # def cog_unload(self):
     #     self._task.cancel()
 
     async def __error(self, ctx, error):

@@ -10,7 +10,7 @@ from livebot.models import BearerToken, Log
 from allauth.socialaccount.models import SocialApp
 
 
-class Token:
+class Token(commands.Cog):
     """
     Runs bearer token refresh tasks
 
@@ -23,7 +23,7 @@ class Token:
         self._task = bot.loop.create_task(self.run_tasks())
         self.social_app = SocialApp.objects.get(client_id=os.getenv('LIVE_BOT_TWITCH_LIVE', None))
 
-    def __unload(self):
+    def cog_unload(self):
         self._task.cancel()
 
     async def on_ready(self):
@@ -32,7 +32,7 @@ class Token:
         """
         if not self.social_app:
             print("No Social App found, unable to run Bearer Token Tasks")
-            self.__unload()
+            self.cog_unload()
 
     async def run_tasks(self):
         try:
@@ -54,7 +54,7 @@ class Token:
         elif bearer_tokens.count() > 1:
             Log.objects.create(message='More than one Bearer Token found that is not expired', email=True)
             bearer_tokens.update(expired=True)
-            self.__unload()
+            self.cog_unload()
             return 1800 # 30 minutes
 
         bearer_token = bearer_tokens[0]

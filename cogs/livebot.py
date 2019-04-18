@@ -18,7 +18,7 @@ QUESTION_TIMEOUT = 120.0
 class UserCancelled(Exception):
     pass
 
-class LiveBot:
+class LiveBot(commands.Cog):
     """
     Commands that allow you to start monitoring/unmonitoring a Twitch Channel
     You can also edit the message shown when a streamer goes live

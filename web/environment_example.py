@@ -18,3 +18,4 @@ os.environ['LIVE_BOT_DATABASE_PASSWORD'] = "" # Django database password
 os.environ['LIVE_BOT_DATABASE_PORT'] = "" # Django database port
 os.environ['LIVE_BOT_EMAIL_PASSWORD'] = "" # Django email password
 os.environ['LIVE_BOT_DBOTS_KEY'] = "" # bots.discord.pw key
+os.environ['LIVE_BOT_DBL_KEY'] = "" # discordbots.org key

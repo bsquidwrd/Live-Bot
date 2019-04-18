@@ -16,7 +16,7 @@ from django.utils import timezone
 from allauth.socialaccount.models import SocialApp
 
 
-class Tasks:
+class Tasks(commands.Cog):
     """
     Runs misc tasks
 
@@ -32,7 +32,7 @@ class Tasks:
         except Exception as e:
             print(e)
 
-    def __unload(self):
+    def cog_unload(self):
         self._task.cancel()
 
     async def on_ready(self):
@@ -41,7 +41,7 @@ class Tasks:
         """
         if not self.client_id:
             print("No Twitch Client ID, unable to run Twitch Tasks")
-            self.__unload()
+            self.cog_unload()
 
     async def run_tasks(self):
         try:

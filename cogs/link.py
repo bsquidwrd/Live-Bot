@@ -7,7 +7,7 @@ import web.wsgi
 from livebot.models import Log
 from livebot.utils import logify_exception_info
 
-class Link:
+class Link(commands.Cog):
     """Commands to link social accounts"""
 
     def __init__(self, bot):
