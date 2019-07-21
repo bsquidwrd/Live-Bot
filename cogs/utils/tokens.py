@@ -3,7 +3,7 @@ import os
 from livebot.models import BearerToken
 
 def get_request_headers():
-    client_id = os.getenv('LIVE_BOT_TWITCH_LIVE')
+    client_id = os.getenv('TWITCH_LIVE')
     bearer_token = BearerToken.objects.get(expired=False)
     return {
         'Client-ID': client_id,

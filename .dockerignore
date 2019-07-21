@@ -4,7 +4,6 @@ node_modules/*
 *.db-journal
 *.sh
 *.env
-!example.env
 env/
 data/*
 logs/*

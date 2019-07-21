@@ -44,7 +44,7 @@ class Stats(commands.Cog):
 
     async def update_dbl(self, client, bot_id, guild_count):
         # DBL - discordbots.org
-        token = os.environ.get('LIVE_BOT_DBL_KEY', None)
+        token = os.environ.get('DBL_KEY', None)
         if token:
             try:
                 BASE_URL = "https://discordbots.org/api"

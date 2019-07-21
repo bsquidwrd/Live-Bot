@@ -25,7 +25,7 @@ class BearerToken(models.Model):
 
 class TwitchGame(models.Model):
     id = models.BigIntegerField(primary_key=True, verbose_name='Game ID')
-    name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Game Name')
+    name = models.TextField(max_length=255, blank=True, verbose_name='Game Name', default='')
     box_art = models.URLField(blank=True, null=True, verbose_name="Game Box Art")
 
     def __str__(self):

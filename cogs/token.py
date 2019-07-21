@@ -21,7 +21,7 @@ class Token(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._task = bot.loop.create_task(self.run_tasks())
-        self.social_app = SocialApp.objects.get(client_id=os.getenv('LIVE_BOT_TWITCH_LIVE', None))
+        self.social_app = SocialApp.objects.get(client_id=os.getenv('TWITCH_LIVE', None))
 
     def cog_unload(self):
         self._task.cancel()

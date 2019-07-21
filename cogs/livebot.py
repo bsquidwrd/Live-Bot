@@ -26,7 +26,7 @@ class LiveBot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.author = None
-        self.client_id = os.getenv('LIVE_BOT_TWITCH_LIVE', None)
+        self.client_id = os.getenv('TWITCH_LIVE', None)
         self.TWITCH_USER_URL = "https://api.twitch.tv/helix/users?login={username}"
 
     async def on_ready(self):
