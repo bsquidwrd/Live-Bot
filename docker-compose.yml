@@ -4,6 +4,8 @@ services:
   bot:
     image: bsquidwrd/livebot:latest
     restart: unless-stopped
+    env_file:
+      - .env
     command: ["python", "bot.py"]
     networks:
       - default
@@ -12,6 +14,8 @@ services:
   update_users:
     image: bsquidwrd/livebot:latest
     restart: unless-stopped
+    env_file:
+      - .env
     command: ["python", "update_users.py"]
     networks:
       - default
@@ -22,6 +26,8 @@ services:
     restart: unless-stopped
     ports:
       - "8000:80"
+    env_file:
+      - .env
     command: ["python", "manage.py", "runserver", "0.0.0.0:80"]
     networks:
       - default
