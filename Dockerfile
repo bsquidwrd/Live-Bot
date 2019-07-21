@@ -9,6 +9,4 @@ RUN python -m pip install -r /requirements.txt
 
 ADD . /code/
 
-ENV TOKEN='placeholder'
-
 CMD ["python", "bot.py"]
