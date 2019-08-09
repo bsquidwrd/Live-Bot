@@ -39,6 +39,7 @@ initial_extensions = (
     'cogs.meta',
     'cogs.livebot',
     'cogs.token',
+    'cogs.update_guilds',
 )
 
 def _prefix_callable(bot, msg):
@@ -55,6 +56,7 @@ class LiveBot(commands.AutoShardedBot):
         self.session = aiohttp.ClientSession()
         self.github_url = github_url
         self.debug_mode = debug_mode
+        self.log = log
 
         self.add_command(self.do)
 
@@ -137,6 +139,11 @@ if __name__ == '__main__':
         initial_extensions = (
             'cogs.travis',
             'cogs.admin',
+        )
+    elif any('manual' in arg.lower() for arg in sys.argv):
+        log.info("Manual detected")
+        initial_extensions = (
+            'cogs.manual',
         )
     bot = LiveBot()
     bot.run()
