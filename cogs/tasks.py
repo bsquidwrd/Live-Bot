@@ -26,7 +26,7 @@ class Tasks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._task = bot.loop.create_task(self.run_tasks())
-        self.client_id = os.getenv('LIVE_BOT_TWITCH_LIVE', None)
+        self.client_id = os.getenv('TWITCH_LIVE', None)
         try:
             importlib.reload(communicate)
         except Exception as e:

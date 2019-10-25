@@ -15,9 +15,9 @@ import importlib
 import web.wsgi
 from cogs.utils import logify_exception_info, logify_dict
 
-debug_mode = os.getenv('LIVE_BOT_DEBUG_MODE', 'true')
+debug_mode = os.getenv('DEBUG_MODE', 'true')
 if not isinstance(debug_mode, bool):
-    # LIVE_BOT_DEBUG_MODE can be set to either 'false' or 'no'. Case insensitive
+    # DEBUG_MODE can be set to either 'false' or 'no'. Case insensitive
     debug_mode = not (debug_mode.lower() in ['false', 'no'])
 
 github_url = 'https://github.com/bsquidwrd/Live-Bot'
@@ -39,6 +39,7 @@ initial_extensions = (
     'cogs.meta',
     'cogs.livebot',
     'cogs.token',
+    'cogs.update_guilds',
 )
 
 def _prefix_callable(bot, msg):
@@ -51,12 +52,11 @@ class LiveBot(commands.AutoShardedBot):
         super().__init__(command_prefix=_prefix_callable, description=description,
                          pm_help=None, help_attrs=dict(hidden=True))
 
-        self.client_id = int(os.environ['LIVE_BOT_CLIENT_ID'])
-        self.client_token = os.environ['LIVE_BOT_TOKEN']
-        self.owner_id = int(os.environ['LIVE_BOT_OWNER_ID'])
+        self.client_token = os.environ['TOKEN']
         self.session = aiohttp.ClientSession()
         self.github_url = github_url
         self.debug_mode = debug_mode
+        self.log = log
 
         self.add_command(self.do)
 
@@ -139,6 +139,11 @@ if __name__ == '__main__':
         initial_extensions = (
             'cogs.travis',
             'cogs.admin',
+        )
+    elif any('manual' in arg.lower() for arg in sys.argv):
+        log.info("Manual detected")
+        initial_extensions = (
+            'cogs.manual',
         )
     bot = LiveBot()
     bot.run()

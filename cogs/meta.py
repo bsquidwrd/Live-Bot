@@ -191,7 +191,7 @@ class Meta(commands.Cog):
                     except Exception as e:
                         pass
             await ctx.send("\N{OK HAND SIGN} Message has been sent to {} guild owners.".format(len(owners_alerted)))
-            channel = self.bot.get_channel(int(os.environ['LIVE_BOT_ALERT_CHANNEL']))
+            channel = self.bot.get_channel(int(os.environ['ALERT_CHANNEL']))
             await channel.send(**alert_args)
         await ctx.message.delete()
 

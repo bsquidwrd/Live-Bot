@@ -11,10 +11,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-try:
-    import web.environment
-except:
-    pass
 
 SITE_ID = 1
 
@@ -26,10 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('LIVE_BOT_DJANGO_SECRET', None)
+SECRET_KEY = os.getenv('DJANGO_SECRET', None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-debug_mode = os.getenv('LIVE_BOT_DEBUG_MODE', 'true')
+debug_mode = os.getenv('DEBUG_MODE', 'true')
 if debug_mode.lower() == 'false':
     DEBUG = False
 else:
@@ -62,12 +58,12 @@ if 'TRAVIS' in os.environ:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': os.getenv('LIVE_BOT_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
-            'NAME': os.getenv('LIVE_BOT_DATABASE_NAME', 'livebot.db'),
-            'HOST': os.getenv('LIVE_BOT_DATABASE_HOST', None),
-            'USER': os.getenv('LIVE_BOT_DATABASE_USERNAME', None),
-            'PASSWORD': os.getenv('LIVE_BOT_DATABASE_PASSWORD', None),
-            'PORT': os.getenv('LIVE_BOT_DATABASE_PORT', None)
+            'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3'),
+            'NAME': os.getenv('DATABASE_NAME', 'livebot.db'),
+            'HOST': os.getenv('DATABASE_HOST', None),
+            'USER': os.getenv('DATABASE_USERNAME', None),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD', None),
+            'PORT': os.getenv('DATABASE_PORT', None)
         }
     }
     if os.getenv('DATABASE_URL', None):
@@ -78,7 +74,7 @@ else:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-relay.gmail.com'
 EMAIL_HOST_USER = 'noreply@bsquidwrd.com'
-EMAIL_HOST_PASSWORD = os.getenv('LIVE_BOT_EMAIL_PASSWORD', None)
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD', None)
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 SERVER_EMAIL = 'Live Bot <noreply@bsquidwrd.com>'
