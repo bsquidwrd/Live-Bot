@@ -6,7 +6,7 @@ Clear-Host
 # Making Migrations for Django
 # Write to the host since the command usually spits out "no changes detected" and could be confusing
 Write-Host "Making Migrations for Django before building..."
-docker run --rm --mount type=bind,src=E:/Projects/Discord/Live-Bot,dst=/code --env-file .env bsquidwrd/livebot python manage.py makemigrations
+docker run --rm --mount type=bind,src=E:/Projects/Discord/Live-Bot,dst=/code --env-file dev.env bsquidwrd/livebot python manage.py makemigrations
 
 # Build image
 docker build --rm -f "Dockerfile" -t bsquidwrd/livebot .
