@@ -1,0 +1,72 @@
+version: '3'
+services:
+
+  migrations:
+    image: bsquidwrd/livebot:latest
+    env_file:
+      - .env
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: none
+    command: ["python", "manage.py", "migrate"]
+    networks:
+      - default
+      - backend
+
+  bot:
+    image: bsquidwrd/livebot:latest
+    env_file:
+      - .env
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    command: ["python", "bot.py"]
+    networks:
+      - default
+      - backend
+
+  update_users:
+    image: bsquidwrd/livebot:latest
+    env_file:
+      - .env
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    command: ["python", "update_users.py"]
+    networks:
+      - default
+      - backend
+
+  website:
+    image: bsquidwrd/livebot:latest
+    env_file:
+      - .env
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8000:80"
+    command: ["python", "manage.py", "runserver", "0.0.0.0:80"]
+    networks:
+      - default
+      - backend
+
+networks:
+  backend:
+    internal: true
